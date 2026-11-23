@@ -1476,6 +1476,11 @@ export interface ApiClient {
         headers?: RequestHeader[];
         /** The person's own connection, which any member adds. */
         personal?: boolean;
+        /**
+         * The app takes a pasted return: a server that refuses our callback may sign in at the loopback address, and
+         * the answer's `paste` says so.
+         */
+        paste?: boolean;
       },
     ): Promise<CustomConnectStart>;
     /** Lists the server's tools again; new ones come back unclassified. */

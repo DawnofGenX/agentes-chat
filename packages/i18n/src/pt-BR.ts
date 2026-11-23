@@ -15242,11 +15242,49 @@ export const ptBR = {
     composioHelp:
       "Você entra na página da Composio, em inglês, e volta para cá. A permissão do {{name}} aparece como “Composio”.",
     or: "ou",
-    withKey: "Conectar com uma chave de API",
     needsKey: "Este servidor não aceita OAuth. Conecte com uma chave de API.",
     notApproved:
       "{{name}} só deixa entrar apps que aprovou, e o agentes.chat ainda não foi aprovado. Se ele te der uma chave de API, dá para conectar com ela.",
     serverSaid: "O servidor respondeu: {{detail}}",
+    /** Under the address: the other ways in, in one line that opens (ADR 0016 addendum 2026-11-23). */
+    more: {
+      title: "Outras formas de conectar",
+      /** Listed in the line's description, joined as a sentence ("An API key, your own OAuth app, or request headers."). */
+      key: "chave de API",
+      own: "um app OAuth seu",
+      headers: "cabeçalhos da requisição",
+    },
+    ways: {
+      label: "Como conectar",
+      page: "Pela página do serviço",
+      pageText: "Você autoriza lá e volta para cá. É o jeito da maioria.",
+      key: "Com uma chave de API",
+      keyText: "Para o servidor que dá uma chave em vez de pedir login.",
+      own: "Com um app OAuth seu",
+      ownText: "Para o servidor que só deixa entrar apps que aprovou.",
+    },
+    /** A server that took only the loopback address: its sign-in ends on a page that doesn't load, pasted back here. */
+    paste: {
+      intro:
+        "O {{name}} abre em outra aba. Depois de autorizar, ele mostra uma página que não carrega. É assim mesmo: copie o endereço dela e volte aqui.",
+      where: "É o endereço na barra do navegador, o que começa com localhost.",
+      /** The browser's own words on that page, drawn in the picture. */
+      unreachable: "Não é possível acessar esse site",
+      open: "Abrir o {{name}}",
+      waiting: "Esperando você voltar do {{name}}",
+      waitingText: "Autorize lá e copie o endereço da página que não carregar.",
+      back: "Ainda não conectou",
+      backText: "Falta colar aqui o endereço da página que não carregou.",
+      connecting: "Conectando ao {{name}}",
+      connectingText: "Conferindo o endereço e listando as ferramentas.",
+      field: "Endereço da página que não carregou",
+      paste: "Colar",
+      pasteFailed: "O navegador não deixou colar. Cole com Ctrl+V (⌘V no Mac).",
+      wrong: "Esse não é o endereço daquela página. Ele começa com {{start}}.",
+      refused: "O {{name}} não foi autorizado. Abra de novo para tentar outra vez.",
+      notOpened: "Não abriu?",
+      openAgain: "Abrir o {{name}} de novo",
+    },
     ownClient: {
       title: "Usar seu próprio app OAuth",
       notApproved:
@@ -15272,7 +15310,7 @@ export const ptBR = {
     },
     headers: {
       title: "Cabeçalhos da requisição",
-      help: "Para uma chave que vai em outro cabeçalho, ou um gateway na frente do servidor. A maioria dos servidores não precisa.",
+      help: "Para uma chave em outro cabeçalho ou um gateway na frente. A maioria não precisa.",
       value: "Valor",
       nameOf: "Nome do cabeçalho {{n}}",
       valueOf: "Valor do cabeçalho {{n}}",

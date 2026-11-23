@@ -15271,11 +15271,49 @@ export const en = {
     composioHelp:
       "You sign in on Composio's page, in English, and come back here. {{name}} shows the permission as “Composio”.",
     or: "or",
-    withKey: "Connect with an API key",
     needsKey: "This server doesn't support OAuth. Connect with an API key.",
     notApproved:
       "{{name}} only lets apps it approved sign in, and agentes.chat isn't approved yet. If it gives you an API key, you can connect with that.",
     serverSaid: "The server answered: {{detail}}",
+    /** Under the address: the other ways in, in one line that opens (ADR 0016 addendum 2026-11-23). */
+    more: {
+      title: "Other ways to connect",
+      /** Listed in the line's description, joined as a sentence ("An API key, your own OAuth app, or request headers."). */
+      key: "an API key",
+      own: "your own OAuth app",
+      headers: "request headers",
+    },
+    ways: {
+      label: "How to connect",
+      page: "On the service's page",
+      pageText: "You approve it there and come back here. Most services work this way.",
+      key: "With an API key",
+      keyText: "For a server that gives you a key instead of a sign-in.",
+      own: "With your own OAuth app",
+      ownText: "For a server that only lets in apps it approved.",
+    },
+    /** A server that took only the loopback address: its sign-in ends on a page that doesn't load, pasted back here. */
+    paste: {
+      intro:
+        "{{name}} opens in another tab. Once you approve, it shows a page that doesn't load. That's expected: copy its address and come back here.",
+      where: "It's the address in the browser's bar, the one that starts with localhost.",
+      /** The browser's own words on that page, drawn in the picture. */
+      unreachable: "This site can't be reached",
+      open: "Open {{name}}",
+      waiting: "Waiting for you to come back from {{name}}",
+      waitingText: "Approve it there and copy the address of the page that doesn't load.",
+      back: "Not connected yet",
+      backText: "Paste the address of the page that didn't load here.",
+      connecting: "Connecting to {{name}}",
+      connectingText: "Checking the address and listing the tools.",
+      field: "Address of the page that didn't load",
+      paste: "Paste",
+      pasteFailed: "The browser didn't let us paste. Paste with Ctrl+V (⌘V on a Mac).",
+      wrong: "That's not the address of that page. It starts with {{start}}.",
+      refused: "{{name}} wasn't approved. Open it again to try once more.",
+      notOpened: "Didn't open?",
+      openAgain: "Open {{name}} again",
+    },
     /**
      * A server that lets in only OAuth apps it approved (Meta Ads): an admin registers an app of the workspace's own
      * there and pastes its client ID (and secret). "Redirect URI", "Client ID", "Client secret" and "Scopes" are the
@@ -15310,7 +15348,7 @@ export const en = {
      */
     headers: {
       title: "Request headers",
-      help: "For a key that goes in another header, or a gateway in front of the server. Most servers need none.",
+      help: "For a key in another header, or a gateway in front. Most servers need none.",
       value: "Value",
       nameOf: "Name of header {{n}}",
       valueOf: "Value of header {{n}}",

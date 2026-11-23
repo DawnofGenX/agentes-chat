@@ -5553,8 +5553,11 @@ html:not([data-pointer]) .cflow__more summary:focus-visible {
   gap: var(--form-gap);
   margin-top: var(--space-3);
 }
-/* After "Para quem" the dialog's own gap is the space: a field ends on its own line, not on running text. */
-.ac-field + .cflow__key {
+/* After "Para quem" the dialog's own gap is the space: a field ends on its own line, not on running text. Under a
+   line of "Other ways to connect", its body's gap is. */
+.ac-field + .cflow__key,
+.ac-optrow__more > .cflow__key,
+.ac-setmore__body > .cflow__headers {
   margin-top: 0;
 }
 /* A server by address's request headers: what they are for, the saved names, a name and a value per row, one more. */
@@ -5599,6 +5602,161 @@ html:not([data-pointer]) .cflow__more summary:focus-visible {
   align-items: center;
   gap: var(--space-2) var(--space-3);
 }
+/* A sign-in whose return is pasted (ConnectPaste, ADR 0016 addendum 2026-11-23). Where the dialog stands: one line,
+   the working orbit or a mark before its words, the words under it. */
+.cflow-paste__now {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.cflow-paste__state {
+  margin: 0;
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.cflow-paste__state > .ac-icon {
+  flex: none;
+}
+.cflow-paste {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+/* The page that doesn't load, drawn as the app's scenes are: a pixel window rising from a dithered ground. One
+   surface, the band; the window is a drawing on it, with pixel corners and no shadow. */
+.cflow-paste__scene {
+  --px: 3px;
+  position: relative;
+  height: 172px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  isolation: isolate;
+}
+.cflow-paste__ground {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-under);
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+.cflow-paste__win {
+  position: absolute;
+  left: 50%;
+  top: 26px;
+  translate: -50% 0;
+  width: min(440px, calc(100% - 40px));
+  height: 200px;
+  box-sizing: border-box;
+  background: var(--surface-raised);
+  border: var(--px) solid var(--ink);
+  border-bottom: 0;
+  clip-path: polygon(
+    var(--px) 0,
+    calc(100% - var(--px)) 0,
+    calc(100% - var(--px)) var(--px),
+    100% var(--px),
+    100% 100%,
+    0 100%,
+    0 var(--px),
+    var(--px) var(--px)
+  );
+}
+.cflow-paste__top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 12px 12px 14px;
+  border-bottom: var(--px) solid var(--ink);
+}
+.cflow-paste__dots {
+  display: flex;
+  gap: 4px;
+  flex: none;
+}
+.cflow-paste__dots > i {
+  width: 6px;
+  height: 6px;
+  background: var(--ink);
+  opacity: 0.28;
+}
+.cflow-paste__addr {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 6px;
+  box-sizing: border-box;
+  border: var(--px) solid var(--ink);
+  font: 12.5px / 18px var(--font-mono);
+  clip-path: polygon(
+    var(--px) 0,
+    calc(100% - var(--px)) 0,
+    calc(100% - var(--px)) var(--px),
+    100% var(--px),
+    100% calc(100% - var(--px)),
+    calc(100% - var(--px)) calc(100% - var(--px)),
+    calc(100% - var(--px)) 100%,
+    var(--px) 100%,
+    var(--px) calc(100% - var(--px)),
+    0 calc(100% - var(--px)),
+    0 var(--px),
+    var(--px) var(--px)
+  );
+}
+/* Selected, as text is right before it is copied. */
+.cflow-paste__addr > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 4px;
+  background: var(--ink);
+  color: var(--surface-raised);
+}
+/* The browser's own words, with its exclamation in two pixels. */
+.cflow-paste__page {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 16px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-muted);
+}
+.cflow-paste__page > i {
+  flex: none;
+  display: grid;
+  gap: 2px;
+}
+.cflow-paste__page > i::before,
+.cflow-paste__page > i::after {
+  content: "";
+  display: block;
+  width: 4px;
+  background: var(--ink-muted);
+}
+.cflow-paste__page > i::before {
+  height: 9px;
+}
+.cflow-paste__page > i::after {
+  height: 4px;
+}
+.cflow-paste__where {
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-muted);
+}
+/* "Didn't open? Open … again": the link right after the question, in the note's size. */
+.cflow-paste__again > .ac-link {
+  margin-inline-start: 0;
+  font-size: inherit;
+}
+
 /* The server's own words under ours: its codes are long unbroken words. */
 .cflow__said {
   display: block;
