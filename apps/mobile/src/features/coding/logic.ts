@@ -16,6 +16,8 @@ export const sessionChatHref = (s: Pick<CodeSession, "channelId" | "rootId">) =>
 /** A session's Git and Files. */
 export const sessionCodeHref = (sessionId: string) => `/coding/${sessionId}`;
 export const sessionPeopleHref = (sessionId: string) => `/coding/${sessionId}/people`;
+/** A session's terminal: a shell in its worktree. */
+export const sessionTerminalHref = (sessionId: string) => `/coding/${sessionId}/terminal`;
 export const sessionFolderHref = (sessionId: string, dir: string) =>
   `/coding/${sessionId}/files?dir=${encodeURIComponent(dir)}`;
 export const sessionFileHref = (sessionId: string, path: string) =>
