@@ -5485,6 +5485,12 @@ html:not([data-pointer]) .catalog-tile:focus-visible {
 .cflow__title:has(> .ac-captop) > :first-child {
   translate: none;
 }
+/* A stage's back, before the tile (ADR 0016 addendum 2026-11-23): centred on the tile (its row's middle is 26 under the
+   head's top) as it rises to the title's capitals, its plate reaching out so the arrow sits near the dialog's edge. */
+.cflow > .ac-dialog__head > .ac-dialog__lead {
+  translate: 0 calc(26px - var(--title-cap-mid) - 50%);
+  margin-inline: -8px -4px;
+}
 .cflow__steps {
   display: flex;
   gap: 6px;
@@ -5610,8 +5616,8 @@ html:not([data-pointer]) .cflow__more summary:focus-visible {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-/* Connecting a server in stages (ADR 0016 addendum 2026-11-23): each one asks one thing, its question large with a line
-   under it, and at most one field, large. */
+/* Connecting a server in stages (ADR 0016 addendum 2026-11-23): each one asks one thing, its question in the kit's h3
+   with a line under it, and at most one field. */
 .cflow__ask {
   display: flex;
   flex-direction: column;
@@ -5619,23 +5625,14 @@ html:not([data-pointer]) .cflow__more summary:focus-visible {
 }
 .cflow__question {
   margin: 0;
-  font-size: 20px;
-  line-height: 26px;
+  font-size: var(--text-h3);
+  line-height: 24px;
   font-weight: 650;
-  letter-spacing: -0.01em;
   color: var(--ink);
   text-wrap: balance;
 }
 .cflow__big {
   display: block;
-}
-.cflow__big .ac-input,
-.cflow__big .ac-input-affix {
-  min-height: 52px;
-  font-size: 17px;
-}
-.cflow__big .ac-input-affix input {
-  font-size: 17px;
 }
 /* "Connect another way": a quiet link under the address, at its start. */
 .cflow__other {
