@@ -43,6 +43,7 @@ import {
   touchLastSeen,
 } from "@agenteschat/engine";
 import type { Auth, SessionUser } from "../auth";
+import { busyResponse, MAX_SOCKETS_PER_PERSON, retryAfterSeconds } from "../load-shed";
 import type { Logger } from "../logger";
 import { allowedOrigins, requestOriginAllowed } from "../routes/app/context";
 import {
@@ -112,6 +113,8 @@ export interface RealtimeDeps {
   live?: LiveSockets;
   /** How often an open socket checks its session again, before jitter (`SESSION_RECHECK_MS`; tests go faster). */
   sessionRecheckMs?: number;
+  /** Why this process is overloaded now (`watchLoad`), or null: new sockets are turned away with a 503 meanwhile. */
+  overloaded?: () => string | null;
 }
 
 /** A browser tab of the web app. */
@@ -124,6 +127,11 @@ export interface BrowserSocketData {
   sessionCheckInFlight: Promise<boolean> | null;
   sessionTimer: ReturnType<typeof setInterval> | null;
   orgId: string;
+  /**
+   * The app instance's own id (`?tab=`): its new socket replaces the one it left behind here, which may stay
+   * half-open until the idle timeout. Absent from older apps.
+   */
+  tab: string | null;
   subscriptions: Map<string, Unsubscribe>;
   /** Org and user topic listeners. */
   system: Unsubscribe[];
@@ -328,6 +336,10 @@ export function createRealtime(deps: RealtimeDeps) {
   // count it as unread without subscribing to every channel. The author's own sockets never hear it.
   // ponytail: one audience query per message per replica with sockets; a per-channel member cache if that shows up.
   const browsers = new Set<BrowserSocket>();
+  /** Open sockets by person, and by person, workspace and app instance (`tab`). */
+  const perPerson = new Map<string, number>();
+  const tabs = new Map<string, BrowserSocket>();
+  const tabKey = (data: BrowserSocketData) => (data.tab ? `${data.user.id}:${data.orgId}:${data.tab}` : null);
   deps.pubsub.subscribe(chatActivityTopic, (raw) => {
     if (browsers.size === 0) return;
     const { channelId, threadId, authorUserId, mentionedUserIds } = raw as {
@@ -735,10 +747,20 @@ export function createRealtime(deps: RealtimeDeps) {
     },
 
     async upgrade(req: Request, server: Bun.Server<SocketData>): Promise<Response | undefined> {
-      const orgId = new URL(req.url).searchParams.get("orgId") ?? "";
+      if (deps.overloaded?.()) return busyResponse();
+      const params = new URL(req.url).searchParams;
+      const orgId = params.get("orgId") ?? "";
+      const tab = params.get("tab");
       const user = await personUpgrade(deps, origins, req, orgId);
       if (user instanceof Response) return user;
       const { sessionToken, ...person } = user;
+      const replaces = tab !== null && tabs.has(`${person.id}:${orgId}:${tab}`);
+      if (!replaces && (perPerson.get(person.id) ?? 0) >= MAX_SOCKETS_PER_PERSON) {
+        return new Response("Too many open connections\n", {
+          status: 429,
+          headers: { "retry-after": String(retryAfterSeconds()) },
+        });
+      }
       const data: BrowserSocketData = {
         kind: "browser",
         connectionId: crypto.randomUUID(),
@@ -748,6 +770,7 @@ export function createRealtime(deps: RealtimeDeps) {
         sessionCheckInFlight: null,
         sessionTimer: null,
         orgId,
+        tab: tab && /^[\w-]{1,32}$/.test(tab) ? tab : null,
         subscriptions: new Map(),
         system: [],
         pending: new Map(),
@@ -763,7 +786,10 @@ export function createRealtime(deps: RealtimeDeps) {
     websocket: {
       // Runners send files inline (up to MAX_FRAME_BYTES); browser frames are still capped at 4096 by `parseClientFrame`.
       maxPayloadLength: MAX_FRAME_BYTES,
+      // The heartbeat: Bun pings a socket that went quiet and closes one that answered nothing for this long, so a
+      // tab gone without a goodbye (a sleeping laptop, a dropped network) doesn't hold its socket.
       idleTimeout: 120,
+      sendPings: true,
       async open(socket: Bun.ServerWebSocket<SocketData>) {
         if (isFrames(socket)) return frameSocket.open(socket);
         if (isMachine(socket)) return deps.machines?.open(socket);
@@ -773,6 +799,13 @@ export function createRealtime(deps: RealtimeDeps) {
         if (!(await liveSession(ws, true))) return;
         browsers.add(ws);
         const { orgId, user } = ws.data;
+        perPerson.set(user.id, (perPerson.get(user.id) ?? 0) + 1);
+        const key = tabKey(ws.data);
+        if (key) {
+          const old = tabs.get(key);
+          tabs.set(key, ws);
+          if (old && old.readyState === 1) old.close(1000, "replaced");
+        }
         const drop = (channelId: string, reason: string) => {
           const pending = ws.data.pending.get(channelId);
           if (pending) pending.revoked = true;
@@ -948,7 +981,13 @@ export function createRealtime(deps: RealtimeDeps) {
         if (isStream(socket)) return deps.streams?.close(socket, code);
         if (isLive(socket)) return deps.live?.close(socket);
         const ws = socket as BrowserSocket;
-        browsers.delete(ws);
+        if (browsers.delete(ws)) {
+          const left = (perPerson.get(ws.data.user.id) ?? 1) - 1;
+          if (left > 0) perPerson.set(ws.data.user.id, left);
+          else perPerson.delete(ws.data.user.id);
+          const key = tabKey(ws.data);
+          if (key && tabs.get(key) === ws) tabs.delete(key);
+        }
         if (ws.data.sessionTimer) clearInterval(ws.data.sessionTimer);
         ws.data.sessionTimer = null;
         for (const off of ws.data.subscriptions.values()) off();
@@ -987,6 +1026,8 @@ export function createRealtime(deps: RealtimeDeps) {
   const { open, message, close } = realtime.websocket;
   return {
     ...realtime,
+    /** The apps' open sockets in this process (`LOAD_SHED_MAX_SOCKETS`). */
+    sockets: () => browsers.size,
     websocket: {
       ...realtime.websocket,
       open: guarded("open", open),

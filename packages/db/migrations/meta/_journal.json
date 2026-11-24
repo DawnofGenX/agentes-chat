@@ -2238,8 +2238,29 @@
     {
       "idx": 321,
       "version": "7",
-      "when": 1795487389986,
-      "tag": "0324_oauth_client_redirect",
+      "when": 1795495329302,
+      "tag": "0324_account_permissions",
+      "breakpoints": true
+    },
+    {
+      "idx": 322,
+      "version": "7",
+      "when": 1795495393705,
+      "tag": "0325_channels_reply_in_threads_by_default",
+      "breakpoints": true
+    },
+    {
+      "idx": 323,
+      "version": "7",
+      "when": 1795495438746,
+      "tag": "0326_unused_agent_columns",
+      "breakpoints": true
+    },
+    {
+      "idx": 324,
+      "version": "7",
+      "when": 1795495498746,
+      "tag": "0327_oauth_client_redirect",
       "breakpoints": true
     }
   ]

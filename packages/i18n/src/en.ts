@@ -3308,7 +3308,7 @@ export const en = {
       team: "Sets up and changes the whole team with cards a person applies: agents, people and workspace settings",
       routines: "Runs and deletes any agent's routine you may manage",
       asYou: "In your own conversation, reads the Drive, the wiki and the tasks you can see",
-      mentions: "Answers an @mention in any channel without being a member",
+      mentions: "Answers an @mention in any channel without being a member, and messages it fits best",
     },
     card: {
       settings: "{{name}} · Settings",
@@ -11179,7 +11179,83 @@ export const en = {
       text: "Agents keep working without it.",
     },
   },
+  /** "Contas de IA" (IA e uso's first tab), an account's permissions, the order of use, and the one "Quem pensa" picker. */
+  aiHub: {
+    tab: "AI accounts",
+    usageTab: "Usage",
+    accounts: "Accounts",
+    accountsHint: "Every plan and API key the agents can think with, whoever connected it.",
+    apiKey: "API key",
+    of: "{{name}}'s",
+    moreSpeed: "Speed and context window",
+    whoThinks: "Who thinks",
+    bulk: {
+      sub: "Pick the AI, then the agents that take it.",
+    },
+    choice: {
+      workspace: "The workspace's",
+      none: "Pick an account",
+      search: "Search by name, AI, plan or owner",
+      noMatch: "No account matches.",
+      noModel: "No model matches.",
+      groups: {
+        yours: "Yours",
+        others: "The team's",
+        keys: "The workspace's",
+      },
+    },
+    order: {
+      title: "Order of use",
+      tip: "Which account agents use first",
+      sub: "At a limit, agents move on to the next account.",
+      group: "{{maker}} · {{computer}}",
+      signedOut: "Signed out · skipped",
+      skipped: "Skipped",
+      fallback: "Continue with the API key when every plan is at its limit",
+      fallbackHint:
+        "Off: agents wait for the first plan to renew. On: they go on with the workspace's API key, which is paid per use. A mission never does.",
+    },
+    detail: {
+      limits: "Limits",
+      noLimits: "No limits read yet.",
+      permissions: "Permissions",
+      saved: "Permissions saved.",
+      more: "More for {{name}}",
+      manage: "Manage",
+      manageLine: "Rename, sign in again, remove",
+      manageHint: "Who may rename this account, sign in to it again, remove it and change these permissions.",
+      use: "Use in agents",
+      useLine: "Pick it in Who thinks",
+      useHint: "Whose agents may think with this account.",
+      reply: "Answer everyone",
+      replyLine: "Who agents on it talk to",
+      replyHint: "Who an agent on this account answers besides its own owner.",
+      claudeTerms: "Under Claude's terms a personal plan is one person's. Sharing it is a gray area.",
+      pickRoles: "The people who hold these roles.",
+      pickPeople: "Besides the account's owner.",
+      searchRoles: "Search roles",
+      searchPeople: "Search people",
+      nobody: "Nobody to pick.",
+    },
+    modes: {
+      owner: "Only you",
+      ownerOf: "Only {{name}}",
+      admins: "You and admins",
+      adminsOf: "{{name}} and admins",
+      roles: "Roles…",
+      people: "People…",
+      everyone: "Everyone",
+      replyOwner: "Only the agent's owner",
+    },
+  },
   aiAccounts: {
+    /** Why an account can't think for these agents (`AccountUseReason`): the picker shows it dimmed, with this. */
+    useReason: {
+      signed_out: "Signed out",
+      owner_left: "{{owner}} left the workspace",
+      owner_only: "Only {{owner}} uses it",
+      not_allowed: "Not open to your agents",
+    },
     /** An account of the viewer's that says no email and has no name of theirs yet (Claude's token for all agents). */
     unnamed: "Unnamed account",
     /** The pencil after an account's title, and the field it opens in the row. */
@@ -16491,6 +16567,8 @@ export const en = {
     account: {
       notRestorable: "This account can't be restored anymore.",
       notOwner: "Only the person who connected this account or plan can do this.",
+      /** `account.permission_forbidden`: an AI account's Gerenciar, Usar em agentes or Atender todos. */
+      permissionForbidden: "Only the account's owner, an admin or whoever may manage it can change this.",
       /** `account.order_forbidden`: the order of use of a provider's accounts (ADR 0041 §6). */
       orderForbidden: "Only the person who connected this account or an admin can change its place in the order.",
     },

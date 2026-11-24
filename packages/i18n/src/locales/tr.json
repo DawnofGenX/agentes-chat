@@ -3057,7 +3057,7 @@
       "team": "Bir kişinin uyguladığı kartlarla tüm ekibi kurar ve değiştirir: ajanlar, kişiler ve çalışma alanı ayarları",
       "routines": "Yönetebildiğin her ajanın rutinini çalıştırır ve siler",
       "asYou": "Kendi sohbetinde, görebildiğin Drive'ı, wikiyi ve görevleri okur",
-      "mentions": "Üyesi olmadan her kanaldaki bir @bahsetmeye yanıt verir"
+      "mentions": "Üyesi olmadan her kanaldaki bir @bahsetmeye ve en iyi uyduğu mesajlara yanıt verir"
     },
     "card": {
       "settings": "{{name}} · Ayarlar",
@@ -10688,7 +10688,80 @@
       "text": "Ajanlar onsuz da çalışmaya devam eder."
     }
   },
+  "aiHub": {
+    "tab": "Yapay zekâ hesapları",
+    "usageTab": "Kullanım",
+    "accounts": "Hesaplar",
+    "accountsHint": "Kim bağlamış olursa olsun, ajanların düşünmek için kullanabileceği her plan ve API anahtarı.",
+    "apiKey": "API anahtarı",
+    "of": "{{name}} kişisinin",
+    "moreSpeed": "Hız ve bağlam penceresi",
+    "whoThinks": "Kim düşünüyor",
+    "bulk": {
+      "sub": "Yapay zekâyı, sonra onu kullanacak ajanları seçin."
+    },
+    "choice": {
+      "workspace": "Çalışma alanınınki",
+      "none": "Bir hesap seçin",
+      "search": "Ada, yapay zekâya, plana veya sahibine göre arayın",
+      "noMatch": "Eşleşen hesap yok.",
+      "noModel": "Eşleşen model yok.",
+      "groups": {
+        "yours": "Sizin",
+        "others": "Ekibin",
+        "keys": "Çalışma alanının"
+      }
+    },
+    "order": {
+      "title": "Kullanım sırası",
+      "tip": "Ajanların önce hangi hesabı kullandığı",
+      "sub": "Sınıra gelince ajanlar sonraki hesaba geçer.",
+      "group": "{{maker}} · {{computer}}",
+      "signedOut": "Oturum kapalı · atlandı",
+      "skipped": "Atlandı",
+      "fallback": "Tüm planlar sınıra gelince API anahtarıyla devam et",
+      "fallbackHint": "Kapalı: ajanlar ilk planın yenilenmesini bekler. Açık: kullanım başına ödenen çalışma alanı API anahtarıyla devam ederler. Bir görev asla devam etmez."
+    },
+    "detail": {
+      "limits": "Sınırlar",
+      "noLimits": "Sınırlar henüz okunmadı.",
+      "permissions": "İzinler",
+      "saved": "İzinler kaydedildi.",
+      "more": "{{name}} için daha fazlası",
+      "manage": "Yönet",
+      "manageLine": "Yeniden adlandır, yeniden giriş yap, kaldır",
+      "manageHint": "Bu hesabı kimin yeniden adlandırabileceği, yeniden giriş yapabileceği, kaldırabileceği ve bu izinleri değiştirebileceği.",
+      "use": "Ajanlarda kullan",
+      "useLine": "Kim düşünüyor içinde seç",
+      "useHint": "Kimin ajanlarının bu hesapla düşünebileceği.",
+      "reply": "Herkese yanıt ver",
+      "replyLine": "Ajanların kiminle konuştuğu",
+      "replyHint": "Bu hesaptaki bir ajanın kendi sahibi dışında kime yanıt verdiği.",
+      "claudeTerms": "Claude koşullarına göre kişisel plan tek bir kişiye aittir. Paylaşmak gri bir alandır.",
+      "pickRoles": "Bu rollere sahip kişiler.",
+      "pickPeople": "Hesap sahibine ek olarak.",
+      "searchRoles": "Rol ara",
+      "searchPeople": "Kişi ara",
+      "nobody": "Seçilecek kimse yok."
+    },
+    "modes": {
+      "owner": "Yalnızca siz",
+      "ownerOf": "Yalnızca {{name}}",
+      "admins": "Siz ve yöneticiler",
+      "adminsOf": "{{name}} ve yöneticiler",
+      "roles": "Roller…",
+      "people": "Kişiler…",
+      "everyone": "Herkes",
+      "replyOwner": "Yalnızca ajanın sahibi"
+    }
+  },
   "aiAccounts": {
+    "useReason": {
+      "signed_out": "Oturum kapalı",
+      "owner_left": "{{owner}} workspace'ten ayrıldı",
+      "owner_only": "Yalnızca {{owner}} kullanıyor",
+      "not_allowed": "Ajanlarına açık değil"
+    },
     "unnamed": "Adsız hesap",
     "rename": {
       "action": "{{label}} adını değiştir",
@@ -16021,6 +16094,7 @@
     "account": {
       "notRestorable": "Bu hesap artık geri yüklenemez.",
       "notOwner": "Bunu yalnızca bu hesabı veya planı bağlayan kişi yapabilir.",
+      "permissionForbidden": "Bunu yalnızca hesabın sahibi, bir yönetici veya hesabı yönetebilen kişi değiştirebilir.",
       "orderForbidden": "Bu hesabın sıradaki yerini yalnızca onu bağlayan kişi veya bir yönetici değiştirebilir."
     },
     "channel": {

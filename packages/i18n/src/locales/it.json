@@ -3177,7 +3177,7 @@
       "team": "Organizza e cambia tutto il team con schede che una persona applica: agenti, persone e impostazioni del workspace",
       "routines": "Avvia ed elimina le routine di qualsiasi agente che puoi gestire",
       "asYou": "Nella tua conversazione, legge il Drive, la wiki e le attività che puoi vedere",
-      "mentions": "Risponde a una @menzione in qualsiasi canale senza esserne membro"
+      "mentions": "Risponde a una @menzione in qualsiasi canale senza esserne membro, e ai messaggi per cui è la scelta migliore"
     },
     "card": {
       "settings": "{{name}} · Impostazioni",
@@ -11178,7 +11178,80 @@
       "text": "Gli agenti continuano a lavorare anche senza."
     }
   },
+  "aiHub": {
+    "tab": "Account IA",
+    "usageTab": "Utilizzo",
+    "accounts": "Account",
+    "accountsHint": "Ogni piano e chiave API con cui gli agenti possono pensare, chiunque l'abbia collegato.",
+    "apiKey": "Chiave API",
+    "of": "di {{name}}",
+    "moreSpeed": "Velocità e finestra di contesto",
+    "whoThinks": "Chi pensa",
+    "bulk": {
+      "sub": "Scegli l'IA e poi gli agenti che la usano."
+    },
+    "choice": {
+      "workspace": "Quella dello spazio di lavoro",
+      "none": "Scegli un account",
+      "search": "Cerca per nome, IA, piano o proprietario",
+      "noMatch": "Nessun account corrisponde.",
+      "noModel": "Nessun modello corrisponde.",
+      "groups": {
+        "yours": "Tuoi",
+        "others": "Del team",
+        "keys": "Dello spazio di lavoro"
+      }
+    },
+    "order": {
+      "title": "Ordine di utilizzo",
+      "tip": "Quale account usano prima gli agenti",
+      "sub": "Al limite, gli agenti passano all'account successivo.",
+      "group": "{{maker}} · {{computer}}",
+      "signedOut": "Disconnesso · saltato",
+      "skipped": "Saltato",
+      "fallback": "Continuare con la chiave API quando tutti i piani sono al limite",
+      "fallbackHint": "Spento: gli agenti aspettano il rinnovo del primo piano. Acceso: continuano con la chiave API dello spazio di lavoro, pagata a consumo. Mai per una missione."
+    },
+    "detail": {
+      "limits": "Limiti",
+      "noLimits": "Limiti non ancora letti.",
+      "permissions": "Autorizzazioni",
+      "saved": "Autorizzazioni salvate.",
+      "more": "Altro per {{name}}",
+      "manage": "Gestire",
+      "manageLine": "Rinominare, accedere di nuovo, rimuovere",
+      "manageHint": "Chi può rinominare questo account, accedervi di nuovo, rimuoverlo e cambiare queste autorizzazioni.",
+      "use": "Usare negli agenti",
+      "useLine": "Sceglierlo in Chi pensa",
+      "useHint": "Gli agenti di chi possono pensare con questo account.",
+      "reply": "Rispondere a tutti",
+      "replyLine": "Con chi parlano gli agenti",
+      "replyHint": "A chi risponde un agente su questo account oltre al suo proprietario.",
+      "claudeTerms": "Secondo i termini di Claude, un piano personale è di una persona. Condividerlo è una zona grigia.",
+      "pickRoles": "Le persone che hanno questi ruoli.",
+      "pickPeople": "Oltre al proprietario dell'account.",
+      "searchRoles": "Cerca ruoli",
+      "searchPeople": "Cerca persone",
+      "nobody": "Nessuno da scegliere."
+    },
+    "modes": {
+      "owner": "Solo tu",
+      "ownerOf": "Solo {{name}}",
+      "admins": "Tu e gli admin",
+      "adminsOf": "{{name}} e gli admin",
+      "roles": "Ruoli…",
+      "people": "Persone…",
+      "everyone": "Tutti",
+      "replyOwner": "Solo il proprietario dell'agente"
+    }
+  },
   "aiAccounts": {
+    "useReason": {
+      "signed_out": "Disconnesso",
+      "owner_left": "{{owner}} ha lasciato il workspace",
+      "owner_only": "Lo usa solo {{owner}}",
+      "not_allowed": "Non aperto ai tuoi agenti"
+    },
     "unnamed": "Account senza nome",
     "rename": {
       "action": "Rinomina {{label}}",
@@ -16663,6 +16736,7 @@
     "account": {
       "notRestorable": "Questo account non si può più ripristinare.",
       "notOwner": "Solo chi ha collegato questo account o piano può farlo.",
+      "permissionForbidden": "Solo il proprietario dell'account, un admin o chi può gestirlo può cambiarlo.",
       "orderForbidden": "Solo chi ha collegato questo account o un admin può cambiarne il posto nell'ordine."
     },
     "channel": {

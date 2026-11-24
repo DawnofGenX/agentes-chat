@@ -118,6 +118,8 @@
   "edge@390 button.ac-btn.ac-btn--primary.ac-btn--sm in span.brw-mf__over",
   "edge@390 button.ac-btn.ac-btn--sm in header.lf-head",
   "edge@390 button.ac-btn.ac-btn--sm in li.nac-pick__row.ac-faceline",
+  "emptyselect@320 button.ac-select__trigger in div.aa-pair",
+  "emptyselect@390 button.ac-select__trigger in div.aa-pair",
   "fieldwidth@1280 input.ac-input in div.ac-field at div.vlt-fields",
   "fieldwidth@320 input.ac-input in div.ac-field at div.vlt-fields",
   "fieldwidth@390 input.ac-input in div.ac-field at div.vlt-fields",

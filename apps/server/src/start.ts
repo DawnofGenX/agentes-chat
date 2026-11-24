@@ -72,6 +72,7 @@ import {
   memoryBudget,
   meterComposio,
   moveIssueComments,
+  poolNeededFor,
   publicHostAddress,
   publicHttpsFetch,
   queueEmbeddingBackfill,
@@ -79,6 +80,7 @@ import {
   resolveHostDns,
   retireHostTokens,
   retireMillionSendMailboxes,
+  STARTUP_RAMP_MS,
   SURFACE_PREFIX,
   setMessageLinkBase,
   setRestrictionNotices,
@@ -100,6 +102,7 @@ import { buildEngine } from "./engine";
 import { watchEventLoopLag } from "./event-loop-lag";
 import { startFreezeWatch } from "./freeze-watch";
 import { checkHumanCheckAtBoot, createHumanCheck } from "./http/human-check";
+import { watchLoad } from "./load-shed";
 import { createLogger, type Logger } from "./logger";
 import { OPERATOR_API_PREFIX, serveOperatorApi } from "./operator/app";
 import { watchProcessHealth } from "./process-health";
@@ -511,9 +514,18 @@ async function boot(
     rssBytes: process.memoryUsage().rss,
     freeBytes: freemem(),
   });
+  if (database.client && config.DATABASE_POOL_MAX < poolNeededFor(config.OUTBOX_MAX_IN_FLIGHT)) {
+    log.warn("too few database connections for the job slots: jobs and requests will wait on each other", {
+      DATABASE_POOL_MAX: config.DATABASE_POOL_MAX,
+      OUTBOX_MAX_IN_FLIGHT: config.OUTBOX_MAX_IN_FLIGHT,
+      needsAtLeast: poolNeededFor(config.OUTBOX_MAX_IN_FLIGHT),
+    });
+  }
   const outbox = {
     maxInFlight: config.OUTBOX_MAX_IN_FLIGHT,
     quickSlots: config.OUTBOX_QUICK_SLOTS,
+    // The runs a restart left waiting start over a minute, the starting long slots in their first 10 seconds.
+    startupRamp: { perSecond: Math.max(1, Math.ceil(slots.long / 10)), forMs: STARTUP_RAMP_MS },
     ...(worker && { skipKinds: APP_JOB_KINDS }),
     // The built-in database is one process's, on one computer: its slots stay where they start.
     ...(database.client && {
@@ -562,6 +574,19 @@ async function boot(
     pubsub: adapters.pubsub,
   });
   let stopping = false;
+  const load = worker
+    ? null
+    : watchLoad({
+        ping: database.ping,
+        sockets: () => realtime.sockets(),
+        limits: {
+          eventLoopMs: config.LOAD_SHED_EVENT_LOOP_MS,
+          dbWaitMs: config.LOAD_SHED_DB_WAIT_MS,
+          sockets: config.LOAD_SHED_MAX_SOCKETS,
+        },
+        log,
+      });
+  const overloaded = () => load?.overloaded() ?? null;
   const services: AppDeps = {
     db: database.db,
     auth,
@@ -596,6 +621,7 @@ async function boot(
     version,
     modules,
     draining: () => stopping,
+    overloaded,
     moduleContext: ctx,
     services,
     log,
@@ -623,6 +649,7 @@ async function boot(
     ...adapters,
     machines: createMachineSockets(engine.machineHub),
     browserLive: engine.browserLive,
+    overloaded,
     streams: createStreamSockets({ db: database.db, auth, config, broker: engine.streams }),
     live: liveSockets,
   });
@@ -724,6 +751,7 @@ async function boot(
     // HTTP stops taking requests (the new deploy serves them). Not awaited: the
     // promise resolves only once every socket is closed, and browser tabs never close theirs.
     telemetry?.stop();
+    load?.stop();
     processHealth.stop();
     void server?.stop();
     void operator?.stop();
@@ -830,14 +858,17 @@ function platformBlobStore(config: Config, db: Database) {
   if (!S3_ENDPOINT || !S3_BUCKET || !S3_ACCESS_KEY_ID || !S3_SECRET_ACCESS_KEY) {
     return config.FILES_DIR ? createDiskBlobStore(config.FILES_DIR) : createPostgresBlobStore(db);
   }
-  return createS3BlobStore({
-    endpoint: S3_ENDPOINT,
-    region: config.S3_REGION,
-    bucket: S3_BUCKET,
-    accessKeyId: S3_ACCESS_KEY_ID,
-    secretAccessKey: S3_SECRET_ACCESS_KEY,
-    pathStyle: config.S3_PATH_STYLE,
-  });
+  return createS3BlobStore(
+    {
+      endpoint: S3_ENDPOINT,
+      region: config.S3_REGION,
+      bucket: S3_BUCKET,
+      accessKeyId: S3_ACCESS_KEY_ID,
+      secretAccessKey: S3_SECRET_ACCESS_KEY,
+      pathStyle: config.S3_PATH_STYLE,
+    },
+    { presign: config.S3_PRESIGNED_URLS },
+  );
 }
 
 /** At most one log line this often about push services refusing this server's signature. */

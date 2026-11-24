@@ -47,6 +47,8 @@ import { announceAgentStatus, askRunStatus, startRunStatus, statusCandidates } f
 import { TECHNICAL_STYLE_LINE } from "./agent-style";
 import { type Agent, getAgentCached } from "./agents";
 import { agentsDmReads, readerOfRun } from "./agents-dm-reads";
+import { planKeyFallbackOn } from "./ai-accounts/fallback";
+import { runAsker } from "./ai-accounts/reply";
 import { type AgentAi, agentAiState, noAiReasonOf, ownNotSignedIn } from "./ai-status";
 import { heldBehind, markNotRun, notRunAfter, notRunText, wakeLine } from "./approval-order";
 import { deciderName, publishApproval } from "./approvals";
@@ -3395,6 +3397,7 @@ async function executeRunInner(
             brainPlan,
             moved.to,
             isRightHand(agent) ? await rightHandPerson(db, agent, run) : null,
+            isRightHand(agent) ? null : await runAsker(db, agent, run),
           )
         : null;
     const cut = transcript.interruptedTurn;
@@ -3940,6 +3943,7 @@ async function executeRunInner(
     const next = await nextAccountPlan(deps, await planAgent(), plan, tried, {
       ...(room ? { room } : {}),
       forPerson: person,
+      asker: isRightHand(agent) ? null : await runAsker(db, agent, run),
       own,
     });
     const to = next.plan?.account;
@@ -4042,6 +4046,16 @@ async function executeRunInner(
             () => null,
           )
         : null;
+    // "Continuar com a chave de API" (`planKeyFallback`, off by default): with every plan account of its order at its
+    // limit, any agent's turn goes on with the workspace's key, as the right hand's does.
+    const keyAfterPlans =
+      !isRightHand(agent) &&
+      u.code === "plan_limit" &&
+      !u.scope &&
+      !next?.plan &&
+      !onlyThisComputer &&
+      !plan.missionId &&
+      (await planKeyFallbackOn(db, run.orgId));
     if (isRightHand(agent) && u.code !== "busy" && !u.queued && !rightHandKey) {
       const ownModel = u.scope ? ownLimitsModel(plan.account?.provider, plan.model) : null;
       const line = rightHandNoAiReason(u.code, ownModel ? u.scope : undefined);
@@ -4055,8 +4069,9 @@ async function executeRunInner(
       await failNoAi(line, undefined, ownModel?.label, said || undefined);
       return "failed";
     }
-    // Only the right hand stands in on the key (the API never stands in for any other agent's computer brain).
-    if (rightHandKey && (await deps.gateway.hasModelCredential(thinker).catch(() => false))) {
+    // Only the right hand stands in on the key, and any agent once its whole order is at its limit while the workspace
+    // turned "Continuar com a chave de API" on.
+    if ((rightHandKey || keyAfterPlans) && (await deps.gateway.hasModelCredential(thinker).catch(() => false))) {
       await leaveLine();
       standIn = { plan, brain, toolGroups: t.toolGroups, loadedGroups: ctx.loadedGroups };
       t.fallback = {
@@ -4082,6 +4097,11 @@ async function executeRunInner(
       await addRunStep(db, run, "context", { brainFallback: { from, code: u.code, message: u.message } });
       standInUsed = rightHandKey;
       return "fallback";
+    }
+    // "Atender todos" keeps the person who asked out of the plan: nothing they wait for would change it.
+    if (u.code === "plan_not_shared" && !isRightHand(agent)) {
+      await fail(`brain_unavailable: ${u.message}`, { code: u.code, detail: u.message });
+      return "failed";
     }
     // Signed out, the command-line tool missing, no computer: nothing signals that it's fixed (only the
     // computer coming back online would), so a wait would never end.

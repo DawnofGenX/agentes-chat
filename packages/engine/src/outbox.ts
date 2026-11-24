@@ -518,6 +518,15 @@ export const MEMORY_GROW_MAX = 0.7;
 export const MEMORY_SHED_AT = 0.85;
 /** Quick jobs per database connection the quick lane grows to at most: they read and write more than they wait. */
 export const QUICK_JOBS_PER_DB_CONNECTION = 4;
+/** Jobs per database connection the lanes together grow to at most, unless `OUTBOX_MAX_IN_FLIGHT_CEILING` says. */
+export const JOBS_PER_DB_CONNECTION = 8;
+/** The connections a process's job slots need at the least (`DATABASE_POOL_MAX`): one per quick job's share. */
+export const poolNeededFor = (maxInFlight: number) => Math.ceil(maxInFlight / QUICK_JOBS_PER_DB_CONNECTION);
+/**
+ * After a restart, the runs left waiting start as a ramp over this long (`createOutboxPump`'s `startupRamp`), not
+ * all in the first second, when every client is also reconnecting and reading everything again.
+ */
+export const STARTUP_RAMP_MS = 60_000;
 /**
  * What a run waiting on its model or its computer holds in memory, with room to spare (`run-cost.test.ts` measures
  * it). Runs hold no database connection while they wait (ADR 0163), so memory is what bounds the long lane; the live
@@ -541,7 +550,8 @@ export const memoryBudget = (host: { limitBytes: number; rssBytes: number; freeB
 /**
  * How far a pump's lanes may grow from `base`: the quick lane to `QUICK_JOBS_PER_DB_CONNECTION` per connection, the
  * long one to the runs the memory left holds (`RUN_MEMORY_BYTES` each, in `RUNS_MEMORY_SHARE` of `memoryBytes` less
- * what the process holds now), and both together to `cap` when one is set. Never below the base.
+ * what the process holds now), and both together to `cap`, by default `JOBS_PER_DB_CONNECTION` per connection.
+ * Never below the base.
  */
 export function laneLimits(
   base: LaneSlots,
@@ -553,7 +563,8 @@ export function laneLimits(
     quick: Math.max(base.quick, QUICK_JOBS_PER_DB_CONNECTION * host.dbConnections),
     long: Math.max(base.long, runs),
   };
-  return { lanes, total: Math.max(base.quick + base.long, cap ?? lanes.quick + lanes.long) };
+  const total = cap ?? Math.min(lanes.quick + lanes.long, JOBS_PER_DB_CONNECTION * host.dbConnections);
+  return { lanes, total: Math.max(base.quick + base.long, total) };
 }
 
 /**
@@ -663,9 +674,20 @@ export function createOutboxPump(
     limits?: LaneLimits;
     /** The process's memory (`laneLimits`' `memoryBytes`): `tune` brakes and sheds by it. Absent: no memory brake. */
     memoryBytes?: number;
+    /** For `forMs` from its creation, long jobs start at most `perSecond` (`STARTUP_RAMP_MS`). Absent: no ramp. */
+    startupRamp?: { perSecond: number; forMs: number };
     onSlotFree?: () => void;
   },
 ): OutboxPump {
+  const createdAt = performance.now();
+  let rampStarted = 0;
+  /** Long jobs the ramp lets start now; Infinity once it is over. */
+  const rampRoom = () => {
+    const ramp = options.startupRamp;
+    const elapsed = performance.now() - createdAt;
+    if (!ramp || elapsed >= ramp.forMs) return Number.POSITIVE_INFINITY;
+    return Math.max(0, 1 + Math.floor((elapsed / 1000) * ramp.perSecond) - rampStarted);
+  };
   const max = options.maxInFlight ?? 20;
   const base: LaneSlots = { quick: options.quickSlots ?? 0, long: max - (options.quickSlots ?? 0) };
   const limits = options.limits ?? { lanes: { quick: max, long: base.long }, total: max };
@@ -692,11 +714,14 @@ export function createOutboxPump(
         onTiming,
         batchSize: free,
         maxQuick: Math.max(0, limits.lanes.quick - quickRunning),
-        maxLong: Math.max(0, slots.long - longRunning),
+        maxLong: Math.max(0, Math.min(slots.long - longRunning, rampRoom())),
         maxBackground: Math.max(0, backgroundSlotsOf(slots.long) - backgroundRunning),
       });
       for (const job of jobs) {
-        if (job.long) longRunning++;
+        if (job.long) {
+          longRunning++;
+          rampStarted++;
+        }
         if (job.background) backgroundRunning++;
         const p: Promise<void> = runJob(db, handlers, job, options).finally(() => {
           running.delete(p);

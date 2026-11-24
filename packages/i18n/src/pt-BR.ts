@@ -3183,7 +3183,7 @@ export const ptBR = {
       team: "Monta e muda o time inteiro por cards que uma pessoa aplica: agentes, pessoas e ajustes do workspace",
       routines: "Roda e apaga rotinas de qualquer agente que você pode gerenciar",
       asYou: "Na sua conversa, lê o Drive, a wiki e as tarefas que você pode ver",
-      mentions: "Responde a um @ em qualquer canal sem ser membro",
+      mentions: "Responde a um @ em qualquer canal sem ser membro, e a mensagens em que é a melhor escolha",
     },
     card: {
       settings: "{{name}} · Configurações",
@@ -11142,7 +11142,83 @@ export const ptBR = {
       text: "Os agentes continuam trabalhando sem ele.",
     },
   },
+  /** "Contas de IA" (IA e uso's first tab), an account's permissions, the order of use, and the one "Quem pensa" picker. */
+  aiHub: {
+    tab: "Contas de IA",
+    usageTab: "Uso",
+    accounts: "Contas",
+    accountsHint: "Todos os planos e chaves de API com que os agentes podem pensar, de quem quer que tenha conectado.",
+    apiKey: "Chave de API",
+    of: "de {{name}}",
+    moreSpeed: "Velocidade e janela de contexto",
+    whoThinks: "Quem pensa",
+    bulk: {
+      sub: "Escolha a IA e depois os agentes que passam a usar.",
+    },
+    choice: {
+      workspace: "A do workspace",
+      none: "Escolha uma conta",
+      search: "Buscar por nome, IA, plano ou dono",
+      noMatch: "Nenhuma conta encontrada.",
+      noModel: "Nenhum modelo encontrado.",
+      groups: {
+        yours: "Suas",
+        others: "Do time",
+        keys: "Do workspace",
+      },
+    },
+    order: {
+      title: "Ordem de uso",
+      tip: "Qual conta os agentes usam primeiro",
+      sub: "No limite, os agentes passam para a próxima conta.",
+      group: "{{maker}} · {{computer}}",
+      signedOut: "Saiu da conta · pulada",
+      skipped: "Pulada",
+      fallback: "Continuar com a chave de API quando todos os planos estiverem no limite",
+      fallbackHint:
+        "Desligado: os agentes esperam o primeiro plano renovar. Ligado: eles seguem com a chave de API do workspace, paga por uso. Uma missão nunca segue.",
+    },
+    detail: {
+      limits: "Limites",
+      noLimits: "Os limites ainda não foram lidos.",
+      permissions: "Permissões",
+      saved: "Permissões salvas.",
+      more: "Mais sobre {{name}}",
+      manage: "Gerenciar",
+      manageLine: "Renomear, entrar de novo, excluir",
+      manageHint: "Quem pode renomear esta conta, entrar de novo, excluir e mudar estas permissões.",
+      use: "Usar em agentes",
+      useLine: "Escolher em Quem pensa",
+      useHint: "De quem os agentes podem pensar com esta conta.",
+      reply: "Atender todos",
+      replyLine: "Com quem os agentes falam",
+      replyHint: "Quem um agente nesta conta atende além do próprio dono.",
+      claudeTerms: "Nos termos do Claude, um plano pessoal é de uma pessoa. Dividir é uma área cinzenta.",
+      pickRoles: "Quem tem estes cargos.",
+      pickPeople: "Além do dono da conta.",
+      searchRoles: "Buscar cargos",
+      searchPeople: "Buscar pessoas",
+      nobody: "Ninguém para escolher.",
+    },
+    modes: {
+      owner: "Só você",
+      ownerOf: "Só {{name}}",
+      admins: "Você e administradores",
+      adminsOf: "{{name}} e administradores",
+      roles: "Cargos…",
+      people: "Pessoas…",
+      everyone: "Todos",
+      replyOwner: "Só o dono do agente",
+    },
+  },
   aiAccounts: {
+    /** Why an account can't think for these agents (`AccountUseReason`): the picker shows it dimmed, with this. */
+    useReason: {
+      signed_out: "Saiu da conta",
+      owner_left: "{{owner}} saiu do workspace",
+      owner_only: "Só {{owner}} usa",
+      not_allowed: "Não liberada para os seus agentes",
+    },
     /** An account of the viewer's that says no email and has no name of theirs yet (Claude's token for all agents). */
     unnamed: "Conta sem nome",
     /** The pencil after an account's title, and the field it opens in the row. */
@@ -16430,6 +16506,8 @@ export const ptBR = {
     account: {
       notRestorable: "Esta conta não pode mais ser restaurada.",
       notOwner: "Só quem conectou esta conta ou plano pode fazer isso.",
+      /** `account.permission_forbidden`: an AI account's Gerenciar, Usar em agentes or Atender todos. */
+      permissionForbidden: "Só o dono da conta, um administrador ou quem pode gerenciá-la muda isto.",
       /** `account.order_forbidden`: the order of use of a provider's accounts (ADR 0041 §6). */
       orderForbidden: "Só quem conectou esta conta ou um admin pode mudar o lugar dela na ordem.",
     },

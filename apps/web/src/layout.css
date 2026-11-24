@@ -14977,6 +14977,14 @@ html:not([data-pointer]) .ac-typing__see:focus-visible {
 .settings-row--toggle:not(:has(.ac-switch:disabled)):hover {
   background: color-mix(in srgb, var(--ink) 3%, transparent);
 }
+/* A line that opens something sums it up in one line: what it opens says the rest, and a narrow pane never leaves its
+   icon a column beside three lines. */
+.settings-row--open :is(.settings-row__status, .settings-row__status .ac-iconline > :last-child) {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
 html:not([data-pointer]) .settings-row--open:focus-visible {
   outline: none;
   box-shadow: var(--focus-ring-inset);

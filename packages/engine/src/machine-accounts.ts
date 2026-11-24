@@ -77,6 +77,7 @@ import {
   windowReadAt,
   windowStale,
 } from "@agenteschat/ui/plan-state";
+import { accountPersonOf, loginPermissions, managesAccount } from "./ai-accounts/serves";
 import { recordAudit } from "./audit";
 import { liveModelLimits } from "./brains/select";
 import { BRAIN_PLAN_NAMES } from "./brains/types";
@@ -170,8 +171,10 @@ export interface MachineAccountView {
   shared: boolean;
   /** Claude's organization it is signed in to (opaque, protocol 50), for its owner's eyes only; null: not known. */
   providerOrgId: string | null;
-  /** Who it thinks for (ADR 0059 §3): everyone in the workspace, or only its owner. */
+  /** Who it thinks for (ADR 0059 §3), as older apps read it: `everyone` while "Usar em agentes" is everyone, else `owner`. */
   serves: PlanServes;
+  /** In an agent's "Quem pensa": it may think for that agent (`accountServesSql` for the agent's owner). */
+  usable?: boolean;
   /** Its place in the order of use of its computer's accounts of its kind (ADR 0041 §6); null: after the placed ones, oldest first. */
   useOrder: number | null;
   /**
@@ -550,8 +553,6 @@ export async function releaseAgents(
       brainAccountLentBy: null,
       brain: sql`case when ${ownSignIn} then "agents"."brain" else 'model' end`,
       // Someone else's plan leaves with its switch: its owner's own sign-in doesn't answer others.
-      // `brain_extra_usage` is unused here; the previous release still reads it during a deploy or after a rollback.
-      brainExtraUsage: sql`case when ${lent} then false else "agents"."brain_extra_usage" end`,
       audienceMode: sql`case when ${lent} and ${ownSignIn} then 'owner' else "agents"."audience_mode" end`,
       updatedAt: now,
     })
@@ -839,13 +840,24 @@ async function settleAccount(
   // The runner says it when it knows it; one that just started doesn't yet (the last stays).
   const usage = info.usage ? { usage: accountReading(row.provider, row.usage, info.usage) } : {};
   if (signingIn) {
-    // A login of an account its owner already has here (one per agent) takes that account's name.
+    // A login of an account its owner already has here (one per agent) takes that account's name and permissions.
+    const sibling = await sameAccount(db, row, identity);
     const label =
-      (await sameAccount(db, row, identity))?.label ??
+      sibling?.label ??
       defaultAccountLabel(kindOf(row), await takenLabels(db, orgId, row.createdBy, row.id), row.provider);
     const [done] = await db
       .update(machineAccounts)
-      .set({ email, plan, keyHint, ...state, label, shared, ...usage, updatedAt: now })
+      .set({
+        email,
+        plan,
+        keyHint,
+        ...state,
+        label,
+        ...(sibling ? loginPermissions(sibling) : {}),
+        shared,
+        ...usage,
+        updatedAt: now,
+      })
       .where(
         and(eq(machineAccounts.orgId, orgId), eq(machineAccounts.id, row.id), eq(machineAccounts.status, "signing_in")),
       )
@@ -998,6 +1010,7 @@ export async function syncMachineAccounts(
           .values({
             ...candidate,
             label: same?.label ?? defaultAccountLabel(a.kind, await takenLabels(tx, orgId, owner, a.id), provider),
+            ...(same ? loginPermissions(same) : {}),
             email: a.email ?? null,
             plan: a.plan ?? null,
             keyHint: a.keyHint ?? null,
@@ -1850,11 +1863,11 @@ export async function renameMachineAccount(
   if (!label || label.length > MACHINE_ACCOUNT_LIMITS.labelChars) {
     throw new ValidationError("Give the account a name of up to 40 characters", "account.invalid_label");
   }
-  const { machine } = await memberMachine(deps.db, userId, orgId, machineId);
+  const { membership, machine } = await memberMachine(deps.db, userId, orgId, machineId);
   const account = await getListedAccount(deps.db, orgId, machine.id, accountId);
   if (!account) throw new NotFoundError("Account not found", "account.not_found");
-  if (account.createdBy !== userId) {
-    throw new ForbiddenError("Only the account's owner can rename it", "account.not_owner");
+  if (!managesAccount(account, accountPersonOf(userId, membership))) {
+    throw new ForbiddenError("Only whoever manages this account can rename it", "account.not_owner");
   }
   const logins = await sameLogins(deps.db, account);
   const renamed = logins.filter((r) => r.label !== label);
@@ -1902,7 +1915,7 @@ export async function removeMachineAccount(
   const account = await getListedAccount(deps.db, orgId, machine.id, accountId);
   if (!account) throw new NotFoundError("Account not found", "account.not_found");
   const allowed =
-    account.createdBy === userId ||
+    managesAccount(account, accountPersonOf(userId, membership)) ||
     machine.pairedByUserId === userId ||
     (can(membership, "configure") && (machine.pairedByUserId === null || account.createdBy === null));
   if (!allowed) {

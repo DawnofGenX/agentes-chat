@@ -23,6 +23,7 @@ import type {
   AccountLoginStart,
   AccountLoginStatus,
   AccountOrderGroup,
+  AccountPermissions,
   ActiveRun,
   Agent,
   AgentAccess,
@@ -1460,7 +1461,17 @@ export function createHttpApi(options: TransportOptions = {}): HttpApi {
           method: "PUT",
           json: { serves },
         }),
-      accountOrder: (orgId) => request<{ groups: AccountOrderGroup[] }>(`${org(orgId)}/ai-accounts/order`),
+      accountOrder: (orgId) =>
+        request<{ groups: AccountOrderGroup[]; keyFallback?: boolean; canConfigure?: boolean }>(
+          `${org(orgId)}/ai-accounts/order`,
+        ),
+      setAccountPermissions: (orgId, accountId, input) =>
+        request<{ permissions: AccountPermissions; agentIds: string[] }>(
+          `${org(orgId)}/ai-accounts/${enc(accountId)}/permissions`,
+          { method: "PUT", json: input },
+        ),
+      setKeyFallback: (orgId, on) =>
+        request<{ on: boolean }>(`${org(orgId)}/ai-accounts/key-fallback`, { method: "PUT", json: { on } }),
       moveAccountInOrder: (orgId, accountId, index) =>
         request<AccountOrderGroup>(`${org(orgId)}/ai-accounts/${enc(accountId)}/order`, {
           method: "PUT",

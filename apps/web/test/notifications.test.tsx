@@ -860,12 +860,9 @@ describe("an agent's model left its plan's list", () => {
     await click(within(read()).getByRole("button", { name: "Escolher outro modelo" }));
     await settle(8);
     expect(router.state.location.pathname).toBe(`/org/${ORG_ID}/agents/${ADA_ID}`);
-    // Straight on the model's screen, its models to pick from; back leads to the dialog's first screen.
-    const d = screen().getByRole("dialog", { name: "Modelo da Ada" });
-    expect(within(d).getByRole("radiogroup", { name: "Modelo da Ada" })).toBeTruthy();
-    await click(within(d).getByRole("button", { name: "Voltar" }));
-    await settle(4);
-    expect(screen().getByRole("dialog", { name: "Quem pensa pela Ada" })).toBe(d);
+    // On the dialog's first screen, where its Modelo is.
+    const d = screen().getByRole("dialog", { name: "Quem pensa pela Ada" });
+    expect(within(d).getByRole("combobox", { name: "Modelo" })).toBeTruthy();
   });
 });
 
@@ -939,6 +936,23 @@ describe("what the workspace itself tells: nobody's face, its own", () => {
     expect(row("n-hold").getAttribute("aria-label")).toBe("O workspace está em espera: os agentes estão pausados");
     // Open, the workspace's mark stands where a face would.
     expect((await open("n-hold")).querySelector(".ib-read__face .nt-sys svg")).toBeTruthy();
+  });
+
+  test("an unread row carries a dot under its time; Mark all as read is a button in the header while any is unread", async () => {
+    const css = await Bun.file(new URL("../src/pages/notifications.css", import.meta.url).pathname).text();
+    // The dot is drawn by the row's end (no element of its own), and a proposal, which has no read state, has none.
+    expect(css).toMatch(
+      /\.ib-row\.is-unread:not\(\.ib-row--proposal\) \.ib-row__end::after \{[^}]*border-radius: 50%[^}]*background: var\(--danger\)/,
+    );
+    const { state } = await go();
+    const button = () => document.querySelector<HTMLButtonElement>(".ib-head .ib-readall");
+    expect(button()?.getAttribute("aria-label")).toBe("Marcar tudo como lido");
+    await click(button() as HTMLElement);
+    await settle(4);
+    expect(state.calls.find((c) => c.method === "notifications.readAll")?.args).toEqual([ORG_ID, "all"]);
+    // Nothing left unread: no row says so, and the button leaves.
+    expect(document.querySelector(".ib-list .ib-row.is-unread")).toBeNull();
+    expect(button()).toBeNull();
   });
 
   test("a headline with no name in it carries the unread weight whole, and loses it once read", async () => {

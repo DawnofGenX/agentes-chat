@@ -55,6 +55,23 @@ function manualTimers() {
 }
 
 describe("RealtimeConnection", () => {
+  test("each connection sends its own tab id, the same on every reconnect, so its new socket replaces its old one", () => {
+    const { factory, sockets } = fakeSockets();
+    const { timers, runNext } = manualTimers();
+    const conn = new RealtimeConnection({ url: "ws://x/api/ws?orgId=o", createSocket: factory, timers, pingMs: 0 });
+    const other = new RealtimeConnection({ url: "ws://x/api/ws?orgId=o", createSocket: factory, timers, pingMs: 0 });
+    conn.start();
+    (sockets[0] as FakeSocket).drop();
+    runNext();
+    other.start();
+    const [first, again, theirs] = sockets.map((s) => s.url);
+    expect(first).toMatch(/^ws:\/\/x\/api\/ws\?orgId=o&tab=[a-z0-9]+$/);
+    expect(again).toBe(first);
+    expect(theirs).not.toBe(first);
+    conn.stop();
+    other.stop();
+  });
+
   test("url uses ws/wss and the org id", () => {
     expect(realtimeUrl({ protocol: "https:", host: "agentes.chat" }, "o 1")).toBe(
       "wss://agentes.chat/api/ws?orgId=o%201",
@@ -592,12 +609,14 @@ describe("RealtimeConnection", () => {
   test("a close that asks to retry after a while is waited out, then spread over as long again", () => {
     const { factory, sockets } = fakeSockets();
     const clock = manualTimers();
+    // A clock that stands still: the hint is kept as a deadline, and real milliseconds passing would shorten the wait.
     const conn = new RealtimeConnection({
       url: "ws://x",
       createSocket: factory,
       timers: clock.timers,
       pingMs: 0,
       random: () => 0.5,
+      now: () => 1_000_000,
     });
     conn.start();
     sockets[0]?.open();

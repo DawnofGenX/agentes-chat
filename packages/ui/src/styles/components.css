@@ -9594,6 +9594,14 @@ html:not([data-pointer]) .ac-recur__day:focus-visible {
 .ac-search__option {
   align-items: center;
 }
+/* One choice, so no check column (as `Select`): the chosen option sits on its plate, its name heavier. */
+.ac-search__list .ac-tz__option[aria-selected="true"] {
+  background: rgba(127, 127, 127, 0.14);
+  font-weight: 600;
+}
+.ac-search__list .ac-tz__option[data-active]:not([aria-selected="true"]) {
+  background: rgba(127, 127, 127, 0.07);
+}
 /* A searchable list with people, agents or roles in it is an OptionRow list: every row the faces' room around them (6,
    10 on touch), every face and mark the list's one size. */
 .ac-tz__list:has(.ac-menu__leading > :is(.ac-avatar, .ac-rolemark)) .ac-tz__option {

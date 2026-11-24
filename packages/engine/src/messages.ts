@@ -1519,6 +1519,19 @@ export async function postPersonMessage(
       ...(referenced.length > 0 ? { referenced } : {}),
       strategy: channel.kind === "dm" && message.mentionedAgentIds.length === 0 ? "dm" : "mention",
     });
+  } else if (channel.kind === "code") {
+    // A code session's conversation is never the router's (ADR 0215), so no decision follows this one: with nobody to
+    // answer (its agent doesn't answer this person, its worktree isn't ready yet, the message is for a person), the
+    // receipt is settled here and no app keeps "Picking who answers".
+    await publishChannelEvent(deps.pubsub, {
+      type: "message.routed",
+      channelId,
+      messageId: message.id,
+      seenBy: [],
+      pickedBy: [],
+      runs: [],
+      strategy: "none",
+    });
   }
   // The runs answer where the message is, or under it when its channel replies in threads (ADR 0214).
   for (const run of runs) {

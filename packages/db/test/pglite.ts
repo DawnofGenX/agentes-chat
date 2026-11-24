@@ -31,6 +31,13 @@ export async function createTestDatabase(): Promise<{ db: Database; close: () =>
 }
 
 /**
+ * Test databases differ from production here alone. A new channel's agents answer in a thread (migration 0325), but
+ * hundreds of tests pin answers in a channel's main timeline; the thread tests turn `reply_in_threads` on themselves,
+ * and the 0325 test reruns that migration to check the production default.
+ */
+const TEST_DEFAULTS = `alter table channels alter column reply_in_threads set default false`;
+
+/**
  * Migrations run into a template database whose data directory is then loaded by every fresh database (much
  * faster than migrating each time). The template is kept in this process and in a file in the system's
  * temporary folder, named after the migrations and the PGlite version: `bun test --parallel` gives every test
@@ -51,7 +58,9 @@ async function loadTemplate(): Promise<Blob> {
   if (existsSync(file)) return new Blob([readFileSync(file)]);
 
   const client = new PGlite({ extensions: { vector } });
-  await migrateInSteps(drizzlePglite(client, { schema, casing: "snake_case" }), migrationsFolder);
+  const template = drizzlePglite(client, { schema, casing: "snake_case" });
+  await migrateInSteps(template, migrationsFolder);
+  await template.execute(sql.raw(TEST_DEFAULTS));
   const dump = await client.dumpDataDir("none");
   await client.close();
   // Written beside its final name and moved there: a process starting meanwhile never reads half a file.
@@ -69,6 +78,7 @@ function templateKey(): string {
     devDependencies?: Record<string, string>;
   };
   hash.update(JSON.stringify([pins.dependencies, pins.devDependencies]));
+  hash.update(TEST_DEFAULTS);
   hash.update(readFileSync(join(migrationsFolder, "meta", "_journal.json")));
   for (const name of readdirSync(migrationsFolder).sort()) {
     if (name.endsWith(".sql")) hash.update(name).update(readFileSync(join(migrationsFolder, name)));
@@ -120,6 +130,7 @@ async function createOnServer(serverUrl: string) {
   const client = postgres(url.toString(), { max: 5, onnotice: () => {} });
   const db = drizzlePostgres(client, { schema, casing: "snake_case", logger: tracingLogger });
   await migrateInSteps(db, migrationsFolder);
+  await db.execute(sql.raw(TEST_DEFAULTS));
 
   return {
     db: db as unknown as Database,

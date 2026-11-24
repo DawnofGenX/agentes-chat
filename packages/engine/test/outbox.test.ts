@@ -20,6 +20,7 @@ import {
   type OutboxJob,
   PermanentJobError,
   POOL_SLOW_MS,
+  poolNeededFor,
   processOutbox,
   RUN_MEMORY_BYTES,
   releaseJobs,
@@ -372,6 +373,34 @@ test("createOutboxPump: a slow job doesn't hold back jobs claimed after it, and 
   expect((await rows()).every((r) => r.status === "done")).toBe(true);
 });
 
+test("createOutboxPump: after a restart, runs start as a ramp; quick jobs don't wait for it", async () => {
+  let release: () => void = () => {};
+  const held = new Promise<void>((r) => {
+    release = r;
+  });
+  const pump = createOutboxPump(
+    db,
+    { "agent_run.execute": () => held, "message.posted": async () => {} },
+    { workerId: "w", maxInFlight: 20, quickSlots: 2, startupRamp: { perSecond: 2, forMs: 60_000 } },
+  );
+  for (let i = 0; i < 10; i++) await enqueue(db, job("agent_run.execute"));
+  for (let i = 0; i < 2; i++) await enqueue(db, job("message.posted"));
+  // The first moment lets one run start, and both quick jobs.
+  expect(await pump.pump()).toBe(3);
+  expect(await pump.pump()).toBe(0);
+  await Bun.sleep(1_100);
+  const started = await pump.pump();
+  expect(started).toBeGreaterThanOrEqual(1);
+  expect(started).toBeLessThanOrEqual(3);
+  release();
+  await pump.idle();
+});
+
+test("poolNeededFor: one database connection per 4 job slots", () => {
+  expect(poolNeededFor(48)).toBe(12);
+  expect(poolNeededFor(49)).toBe(13);
+});
+
 test("createOutboxPump: routines hold at most half of the slots, so other work always finds one", async () => {
   let release: () => void = () => {};
   const held = new Promise<void>((r) => {
@@ -561,13 +590,15 @@ test("resizeLanes: a lane that waits doubles within its limit and the total, qui
   });
 });
 
-test("laneLimits: runs as far as half the memory holds them, quick jobs 4 per connection, a cap over both", () => {
+test("laneLimits: runs as far as half the memory holds them, quick jobs 4 per connection, 8 jobs per connection in all", () => {
   const base = { quick: 12, long: 36 };
   const gb = 1024 ** 3;
   const host = { memoryBytes: 4 * gb, rssBytes: 0.5 * gb, dbConnections: 20 };
   const runs = Math.floor((2 * gb - 0.5 * gb) / RUN_MEMORY_BYTES);
-  expect(laneLimits(base, host)).toEqual({ lanes: { quick: 80, long: runs }, total: 80 + runs });
+  expect(laneLimits(base, host)).toEqual({ lanes: { quick: 80, long: runs }, total: 160 });
+  // The ceiling set says more than the connections.
   expect(laneLimits(base, host, 200).total).toBe(200);
+  expect(laneLimits(base, { ...host, memoryBytes: gb / 4, rssBytes: gb / 8 }).total).toBe(80 + 36);
   // A small box never goes below where the slots start.
   expect(laneLimits(base, { memoryBytes: gb / 2, rssBytes: gb / 2, dbConnections: 2 })).toEqual({
     lanes: base,

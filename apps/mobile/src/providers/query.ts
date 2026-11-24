@@ -1,3 +1,4 @@
+import { busyRetryDelay, retryBusy } from "@agenteschat/client/lib/busy-retry";
 import { LiveQueryClient } from "@agenteschat/client/lib/live-query-client";
 import { focusManager, onlineManager } from "@tanstack/react-query";
 import * as Network from "expo-network";
@@ -12,7 +13,13 @@ export function createQueryClient() {
   bindOnlineToNetwork();
   return new LiveQueryClient({
     defaultOptions: {
-      queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: true, networkMode: "always" },
+      queries: {
+        staleTime: 30_000,
+        retry: retryBusy((count) => count < 1),
+        retryDelay: busyRetryDelay,
+        refetchOnWindowFocus: true,
+        networkMode: "always",
+      },
       mutations: { retry: 0, networkMode: "always" },
     },
   });

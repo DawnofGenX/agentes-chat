@@ -6486,11 +6486,14 @@ export function useMoveAccountInOrder(orgId: string) {
       qc.setQueryData<{ groups: AccountOrderGroup[] }>(keys.accountOrder(orgId), (old) =>
         old
           ? {
+              ...old,
               groups: old.groups.map((g) => (g.machineId === group.machineId && g.kind === group.kind ? group : g)),
             }
           : old,
       );
       void qc.invalidateQueries({ queryKey: keys.agentPages(orgId) });
+      // "Contas de IA" (`hub.order`) shows the same order.
+      void qc.invalidateQueries({ queryKey: keys.aiAccounts(orgId) });
     },
   });
 }

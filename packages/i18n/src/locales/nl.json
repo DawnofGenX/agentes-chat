@@ -3060,7 +3060,7 @@
       "team": "Zet het hele team op en past het aan met kaarten die een persoon toepast: agents, mensen en workspace-instellingen",
       "routines": "Start en verwijdert routines van elke agent die jij mag beheren",
       "asYou": "Leest in je eigen gesprek de Drive, de wiki en de taken die jij kunt zien",
-      "mentions": "Antwoordt op een @vermelding in elk kanaal zonder lid te zijn"
+      "mentions": "Antwoordt op een @vermelding in elk kanaal zonder lid te zijn, en op berichten waar het het best bij past"
     },
     "card": {
       "settings": "{{name}} · Instellingen",
@@ -10794,7 +10794,80 @@
       "text": "Agents blijven ook zonder werken."
     }
   },
+  "aiHub": {
+    "tab": "AI-accounts",
+    "usageTab": "Gebruik",
+    "accounts": "Accounts",
+    "accountsHint": "Elk abonnement en elke API-sleutel waarmee de agents kunnen denken, wie het ook heeft gekoppeld.",
+    "apiKey": "API-sleutel",
+    "of": "van {{name}}",
+    "moreSpeed": "Snelheid en contextvenster",
+    "whoThinks": "Wie denkt",
+    "bulk": {
+      "sub": "Kies de AI en daarna de agents die hem nemen."
+    },
+    "choice": {
+      "workspace": "Die van de werkruimte",
+      "none": "Kies een account",
+      "search": "Zoek op naam, AI, abonnement of eigenaar",
+      "noMatch": "Geen account gevonden.",
+      "noModel": "Geen model gevonden.",
+      "groups": {
+        "yours": "Van jou",
+        "others": "Van het team",
+        "keys": "Van de werkruimte"
+      }
+    },
+    "order": {
+      "title": "Gebruiksvolgorde",
+      "tip": "Welk account agents eerst gebruiken",
+      "sub": "Bij een limiet gaan agents door naar het volgende account.",
+      "group": "{{maker}} · {{computer}}",
+      "signedOut": "Afgemeld · overgeslagen",
+      "skipped": "Overgeslagen",
+      "fallback": "Doorgaan met de API-sleutel als alle abonnementen hun limiet bereiken",
+      "fallbackHint": "Uit: agents wachten tot het eerste abonnement vernieuwt. Aan: ze gaan door met de API-sleutel van de werkruimte, die per gebruik wordt betaald. Een missie nooit."
+    },
+    "detail": {
+      "limits": "Limieten",
+      "noLimits": "Nog geen limieten gelezen.",
+      "permissions": "Machtigingen",
+      "saved": "Machtigingen opgeslagen.",
+      "more": "Meer voor {{name}}",
+      "manage": "Beheren",
+      "manageLine": "Hernoemen, opnieuw aanmelden, verwijderen",
+      "manageHint": "Wie dit account mag hernoemen, er opnieuw op aanmelden, het verwijderen en deze machtigingen wijzigen.",
+      "use": "Gebruiken in agents",
+      "useLine": "Kiezen in Wie denkt",
+      "useHint": "Wiens agents met dit account mogen denken.",
+      "reply": "Iedereen antwoorden",
+      "replyLine": "Met wie de agents praten",
+      "replyHint": "Wie een agent op dit account antwoordt naast zijn eigen eigenaar.",
+      "claudeTerms": "Volgens de voorwaarden van Claude is een persoonlijk abonnement van één persoon. Delen is een grijs gebied.",
+      "pickRoles": "De mensen met deze rollen.",
+      "pickPeople": "Naast de eigenaar van het account.",
+      "searchRoles": "Rollen zoeken",
+      "searchPeople": "Mensen zoeken",
+      "nobody": "Niemand om te kiezen."
+    },
+    "modes": {
+      "owner": "Alleen jij",
+      "ownerOf": "Alleen {{name}}",
+      "admins": "Jij en beheerders",
+      "adminsOf": "{{name}} en beheerders",
+      "roles": "Rollen…",
+      "people": "Mensen…",
+      "everyone": "Iedereen",
+      "replyOwner": "Alleen de eigenaar van de agent"
+    }
+  },
   "aiAccounts": {
+    "useReason": {
+      "signed_out": "Afgemeld",
+      "owner_left": "{{owner}} heeft de workspace verlaten",
+      "owner_only": "Alleen {{owner}} gebruikt het",
+      "not_allowed": "Niet open voor je agents"
+    },
     "unnamed": "Account zonder naam",
     "rename": {
       "action": "{{label}} hernoemen",
@@ -16160,6 +16233,7 @@
     "account": {
       "notRestorable": "Dit account kan niet meer hersteld worden.",
       "notOwner": "Alleen wie dit account of abonnement heeft gekoppeld, kan dit doen.",
+      "permissionForbidden": "Alleen de eigenaar van het account, een beheerder of wie het mag beheren kan dit wijzigen.",
       "orderForbidden": "Alleen wie dit account heeft gekoppeld of een beheerder kan de plek in de volgorde wijzigen."
     },
     "channel": {

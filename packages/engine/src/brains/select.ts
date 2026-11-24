@@ -10,7 +10,7 @@ import {
   OPENCODE_PROTOCOL,
   type PlanUsage,
 } from "@agenteschat/adapters";
-import { and, desc, type Executor, eq, isNotNull, ne, or, schema, sql } from "@agenteschat/db";
+import { and, desc, type Executor, eq, isNotNull, ne, schema, sql } from "@agenteschat/db";
 import { AUTO_MODEL, isAutoModel } from "@agenteschat/providers";
 import {
   autoPlanModel,
@@ -24,6 +24,8 @@ import {
 } from "@agenteschat/providers/plans";
 import { planFull, planState } from "@agenteschat/ui/plan-state";
 import type { Agent } from "../agents";
+import { replyRefusal } from "../ai-accounts/reply";
+import { accountServes } from "../ai-accounts/serves";
 import type { CodeSessionContext } from "../code-sessions";
 import type { ModelGateway } from "../gateway";
 import type { MachineStatus } from "../machine-hub";
@@ -594,9 +596,8 @@ export async function brainAccountFor(
 }
 
 /**
- * Whether the plan may think for this agent (ADR 0059 §3): an account that serves everyone in the workspace
- * (`machine_accounts.serves`), or one that serves only its owner when that is the agent's owner; either way its owner
- * still in the organization. The computer's own sign-in thinks only for agents of the person who connected it.
+ * Whether the plan may think for this agent (ADR 0059 §3): an account that serves its owner (`accountServesSql`). The
+ * computer's own sign-in thinks only for agents of the person who connected it.
  */
 export async function planIsOwners(
   db: Executor,
@@ -606,27 +607,13 @@ export async function planIsOwners(
 ): Promise<boolean> {
   const owner = agent.ownerUserId;
   if (!owner) return false;
-  const { machineAccounts, machines, organizationMembers: members } = schema;
-  const rows = account
-    ? await db
-        .select({ id: machineAccounts.id })
-        .from(machineAccounts)
-        .innerJoin(
-          members,
-          and(eq(members.orgId, machineAccounts.orgId), eq(members.userId, machineAccounts.createdBy)),
-        )
-        .where(
-          and(
-            eq(machineAccounts.orgId, agent.orgId),
-            eq(machineAccounts.id, account.id),
-            or(eq(machineAccounts.createdBy, owner), eq(machineAccounts.serves, "everyone")),
-          ),
-        )
-    : await db
-        .select({ id: machines.id })
-        .from(machines)
-        .innerJoin(members, and(eq(members.orgId, machines.orgId), eq(members.userId, machines.pairedByUserId)))
-        .where(and(eq(machines.orgId, agent.orgId), eq(machines.id, machineId), eq(machines.pairedByUserId, owner)));
+  if (account) return accountServes(db, agent.orgId, account.id, owner);
+  const { machines, organizationMembers: members } = schema;
+  const rows = await db
+    .select({ id: machines.id })
+    .from(machines)
+    .innerJoin(members, and(eq(members.orgId, machines.orgId), eq(members.userId, machines.pairedByUserId)))
+    .where(and(eq(machines.orgId, agent.orgId), eq(machines.id, machineId), eq(machines.pairedByUserId, owner)));
   return rows.length > 0;
 }
 
@@ -844,6 +831,7 @@ export async function resolveBrain(
     (isRightHand(agent) && (agent.brainAccountId || agent.machineId)
       ? await rightHandPlanRefusal(deps.db, agent, run, status)
       : null) ??
+    (account && !isRightHand(agent) ? await replyRefusal(deps.db, agent, account.id, run) : null) ??
     (machineId && !deps.machines
       ? null
       : computerBrainUnavailable(

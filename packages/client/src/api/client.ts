@@ -35,6 +35,7 @@ import type {
   AccountLoginStart,
   AccountLoginStatus,
   AccountOrderGroup,
+  AccountPermissions,
   ActiveRun,
   AdminAsk,
   Agent,
@@ -1343,8 +1344,24 @@ export interface ApiClient {
       accountId: string,
       serves: PlanServes,
     ): Promise<{ serves: PlanServes; agentIds: string[] }>;
-    /** "Ordem de uso" (ADR 0041 §6): every computer's Claude and ChatGPT accounts in their order, by computer and kind. */
-    accountOrder(orgId: string): Promise<{ groups: AccountOrderGroup[] }>;
+    /**
+     * "Ordem de uso" (ADR 0041 §6): every computer's Claude and ChatGPT accounts in their order, by computer and kind,
+     * and the API-key switch under it (absent: an older server).
+     */
+    accountOrder(
+      orgId: string,
+    ): Promise<{ groups: AccountOrderGroup[]; keyFallback?: boolean; canConfigure?: boolean }>;
+    /**
+     * An account's Gerenciar, Usar em agentes and Atender todos (only those given change): `manage` its owner, `use`
+     * whoever manages it, `reply` its owner or an admin (`account.permission_forbidden`). `agentIds`: agents moved off it.
+     */
+    setAccountPermissions(
+      orgId: string,
+      accountId: string,
+      input: Partial<AccountPermissions>,
+    ): Promise<{ permissions: AccountPermissions; agentIds: string[] }>;
+    /** "Continuar com a chave de API quando todos os planos estiverem no limite" (admins). */
+    setKeyFallback(orgId: string, on: boolean): Promise<{ on: boolean }>;
     /** Moves the account to `index` (0 first) in its order: its owner or an admin (`account.order_forbidden`). */
     moveAccountInOrder(orgId: string, accountId: string, index: number): Promise<AccountOrderGroup>;
     /** Its owner names it (1 to 40 characters). */

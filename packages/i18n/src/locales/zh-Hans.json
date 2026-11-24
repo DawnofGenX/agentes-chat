@@ -2944,7 +2944,7 @@
       "team": "通过由人来应用的卡片搭建和调整整个团队，包括智能体、成员和工作区设置",
       "routines": "运行和删除你有权管理的任何智能体的例行任务",
       "asYou": "在你自己的对话里，读取你能看到的 Drive、Wiki 和任务",
-      "mentions": "不是成员也能回应任何频道里的 @提及"
+      "mentions": "不是成员也能回应任何频道里的 @提及，以及最适合由它回答的消息"
     },
     "card": {
       "settings": "{{name}} · 设置",
@@ -10352,7 +10352,80 @@
       "text": "没有它，智能体也会继续工作。"
     }
   },
+  "aiHub": {
+    "tab": "AI 账号",
+    "usageTab": "用量",
+    "accounts": "账号",
+    "accountsHint": "智能体可以用来思考的所有套餐和 API 密钥，无论是谁连接的。",
+    "apiKey": "API 密钥",
+    "of": "{{name}} 的",
+    "moreSpeed": "速度和上下文窗口",
+    "whoThinks": "由谁思考",
+    "bulk": {
+      "sub": "先选 AI，再选使用它的智能体。"
+    },
+    "choice": {
+      "workspace": "工作区的",
+      "none": "选择账号",
+      "search": "按名称、AI、套餐或所有者搜索",
+      "noMatch": "没有匹配的账号。",
+      "noModel": "没有匹配的模型。",
+      "groups": {
+        "yours": "你的",
+        "others": "团队的",
+        "keys": "工作区的"
+      }
+    },
+    "order": {
+      "title": "使用顺序",
+      "tip": "智能体先用哪个账号",
+      "sub": "达到上限时，智能体会换到下一个账号。",
+      "group": "{{maker}} · {{computer}}",
+      "signedOut": "已退出 · 跳过",
+      "skipped": "跳过",
+      "fallback": "所有套餐都达到上限时继续使用 API 密钥",
+      "fallbackHint": "关闭：智能体等待第一个套餐恢复。开启：它们继续使用工作区按用量付费的 API 密钥。任务从不继续。"
+    },
+    "detail": {
+      "limits": "上限",
+      "noLimits": "尚未读取上限。",
+      "permissions": "权限",
+      "saved": "权限已保存。",
+      "more": "{{name}} 的更多操作",
+      "manage": "管理",
+      "manageLine": "重命名、重新登录、移除",
+      "manageHint": "谁可以重命名此账号、重新登录、移除它并更改这些权限。",
+      "use": "用于智能体",
+      "useLine": "在“由谁思考”中选择",
+      "useHint": "谁的智能体可以用此账号思考。",
+      "reply": "回复所有人",
+      "replyLine": "智能体与谁交谈",
+      "replyHint": "此账号上的智能体除了自己的所有者之外还回复谁。",
+      "claudeTerms": "根据 Claude 的条款，个人套餐归一个人所有。共享属于灰色地带。",
+      "pickRoles": "拥有这些角色的人。",
+      "pickPeople": "除账号所有者之外。",
+      "searchRoles": "搜索角色",
+      "searchPeople": "搜索成员",
+      "nobody": "没有可选择的人。"
+    },
+    "modes": {
+      "owner": "仅你",
+      "ownerOf": "仅 {{name}}",
+      "admins": "你和管理员",
+      "adminsOf": "{{name}} 和管理员",
+      "roles": "角色…",
+      "people": "成员…",
+      "everyone": "所有人",
+      "replyOwner": "仅智能体的所有者"
+    }
+  },
   "aiAccounts": {
+    "useReason": {
+      "signed_out": "已退出登录",
+      "owner_left": "{{owner}} 已离开工作区",
+      "owner_only": "只有 {{owner}} 使用",
+      "not_allowed": "未向你的智能体开放"
+    },
     "unnamed": "未命名账号",
     "rename": {
       "action": "重命名 {{label}}",
@@ -15568,6 +15641,7 @@
     "account": {
       "notRestorable": "这个账号已无法恢复。",
       "notOwner": "只有连接此账号或套餐的人可以执行此操作。",
+      "permissionForbidden": "只有账号的所有者、管理员或可以管理它的人才能更改。",
       "orderForbidden": "只有连接此账号的人或管理员可以调整它在顺序中的位置。"
     },
     "channel": {

@@ -1,5 +1,5 @@
 {
-  "id": "d4c7a51d-5edd-41f8-87f5-06681b15b461",
+  "id": "f3225a6f-6d76-4c9a-8cfe-19322f29c8c1",
   "prevId": "6e2f0791-3fd3-4d5c-9ecf-50d4de82511f",
   "version": "7",
   "dialect": "postgresql",
@@ -782,6 +782,13 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'{}'::jsonb"
+        },
+        "plan_key_fallback": {
+          "name": "plan_key_fallback",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
         },
         "gifs": {
           "name": "gifs",
@@ -6302,12 +6309,6 @@
           "notNull": true,
           "default": false
         },
-        "redirect_uri": {
-          "name": "redirect_uri",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -11694,6 +11695,69 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'everyone'"
+        },
+        "manage_mode": {
+          "name": "manage_mode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'admins'"
+        },
+        "manage_user_ids": {
+          "name": "manage_user_ids",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::text[]"
+        },
+        "manage_role_ids": {
+          "name": "manage_role_ids",
+          "type": "uuid[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::uuid[]"
+        },
+        "use_mode": {
+          "name": "use_mode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'everyone'"
+        },
+        "use_user_ids": {
+          "name": "use_user_ids",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::text[]"
+        },
+        "use_role_ids": {
+          "name": "use_role_ids",
+          "type": "uuid[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::uuid[]"
+        },
+        "reply_mode": {
+          "name": "reply_mode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'owner'"
+        },
+        "reply_user_ids": {
+          "name": "reply_user_ids",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::text[]"
+        },
+        "reply_role_ids": {
+          "name": "reply_role_ids",
+          "type": "uuid[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::uuid[]"
         },
         "use_order": {
           "name": "use_order",

@@ -3182,7 +3182,7 @@
       "team": "Met en place et modifie toute l'équipe avec des cartes qu'une personne applique : agents, personnes et réglages du workspace",
       "routines": "Lance et supprime les routines de n'importe quel agent que vous pouvez gérer",
       "asYou": "Dans votre propre conversation, lit le Drive, le wiki et les tâches que vous pouvez voir",
-      "mentions": "Répond à une @mention dans n'importe quel canal sans en être membre"
+      "mentions": "Répond à une @mention dans n'importe quel canal sans en être membre, et aux messages pour lesquels il est le plus indiqué"
     },
     "card": {
       "settings": "{{name}} · Réglages",
@@ -11152,7 +11152,80 @@
       "text": "Les agents continuent de travailler sans elle."
     }
   },
+  "aiHub": {
+    "tab": "Comptes IA",
+    "usageTab": "Utilisation",
+    "accounts": "Comptes",
+    "accountsHint": "Chaque forfait et clé d'API avec lesquels les agents peuvent penser, quel que soit qui l'a connecté.",
+    "apiKey": "Clé d'API",
+    "of": "de {{name}}",
+    "moreSpeed": "Vitesse et fenêtre de contexte",
+    "whoThinks": "Qui pense",
+    "bulk": {
+      "sub": "Choisissez l'IA, puis les agents qui la prennent."
+    },
+    "choice": {
+      "workspace": "Celle de l'espace de travail",
+      "none": "Choisir un compte",
+      "search": "Rechercher par nom, IA, forfait ou propriétaire",
+      "noMatch": "Aucun compte ne correspond.",
+      "noModel": "Aucun modèle ne correspond.",
+      "groups": {
+        "yours": "Les vôtres",
+        "others": "De l'équipe",
+        "keys": "De l'espace de travail"
+      }
+    },
+    "order": {
+      "title": "Ordre d'utilisation",
+      "tip": "Le compte que les agents utilisent en premier",
+      "sub": "À la limite, les agents passent au compte suivant.",
+      "group": "{{maker}} · {{computer}}",
+      "signedOut": "Déconnecté · ignoré",
+      "skipped": "Ignoré",
+      "fallback": "Continuer avec la clé d'API quand tous les forfaits sont à leur limite",
+      "fallbackHint": "Désactivé : les agents attendent que le premier forfait se renouvelle. Activé : ils continuent avec la clé d'API de l'espace de travail, payée à l'usage. Jamais pour une mission."
+    },
+    "detail": {
+      "limits": "Limites",
+      "noLimits": "Limites pas encore lues.",
+      "permissions": "Autorisations",
+      "saved": "Autorisations enregistrées.",
+      "more": "Plus pour {{name}}",
+      "manage": "Gérer",
+      "manageLine": "Renommer, se reconnecter, supprimer",
+      "manageHint": "Qui peut renommer ce compte, s'y reconnecter, le supprimer et changer ces autorisations.",
+      "use": "Utiliser dans les agents",
+      "useLine": "Le choisir dans Qui pense",
+      "useHint": "Les agents de qui peuvent penser avec ce compte.",
+      "reply": "Répondre à tous",
+      "replyLine": "À qui parlent les agents",
+      "replyHint": "À qui un agent sur ce compte répond en plus de son propriétaire.",
+      "claudeTerms": "Selon les conditions de Claude, un forfait personnel appartient à une personne. Le partager est une zone grise.",
+      "pickRoles": "Les personnes qui ont ces rôles.",
+      "pickPeople": "En plus du propriétaire du compte.",
+      "searchRoles": "Rechercher des rôles",
+      "searchPeople": "Rechercher des personnes",
+      "nobody": "Personne à choisir."
+    },
+    "modes": {
+      "owner": "Vous seul",
+      "ownerOf": "Seulement {{name}}",
+      "admins": "Vous et les admins",
+      "adminsOf": "{{name}} et les admins",
+      "roles": "Rôles…",
+      "people": "Personnes…",
+      "everyone": "Tout le monde",
+      "replyOwner": "Seulement le propriétaire de l'agent"
+    }
+  },
   "aiAccounts": {
+    "useReason": {
+      "signed_out": "Déconnecté",
+      "owner_left": "{{owner}} a quitté le workspace",
+      "owner_only": "Seul {{owner}} l'utilise",
+      "not_allowed": "Pas ouvert à vos agents"
+    },
     "unnamed": "Compte sans nom",
     "rename": {
       "action": "Renommer {{label}}",
@@ -16641,6 +16714,7 @@
     "account": {
       "notRestorable": "Ce compte ne peut plus être restauré.",
       "notOwner": "Seule la personne qui a connecté ce compte ou cet abonnement peut faire cela.",
+      "permissionForbidden": "Seul le propriétaire du compte, un admin ou qui peut le gérer peut changer cela.",
       "orderForbidden": "Seuls la personne qui a connecté ce compte ou un admin peuvent changer sa place dans l'ordre."
     },
     "channel": {

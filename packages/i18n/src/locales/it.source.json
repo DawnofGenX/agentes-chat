@@ -7626,7 +7626,7 @@
     "value": "In your own conversation, reads the Drive, the wiki and the tasks you can see"
   },
   "rightHand.powers.mentions": {
-    "value": "Answers an @mention in any channel without being a member"
+    "value": "Answers an @mention in any channel without being a member, and messages it fits best"
   },
   "rightHand.card.settings": {
     "value": "{{name}} · Settings"
@@ -26144,6 +26144,177 @@
   "jev.remove.text": {
     "value": "Agents keep working without it."
   },
+  "aiHub.tab": {
+    "value": "AI accounts"
+  },
+  "aiHub.usageTab": {
+    "value": "Usage"
+  },
+  "aiHub.accounts": {
+    "value": "Accounts"
+  },
+  "aiHub.accountsHint": {
+    "value": "Every plan and API key the agents can think with, whoever connected it."
+  },
+  "aiHub.apiKey": {
+    "value": "API key"
+  },
+  "aiHub.of": {
+    "value": "{{name}}'s"
+  },
+  "aiHub.moreSpeed": {
+    "value": "Speed and context window"
+  },
+  "aiHub.whoThinks": {
+    "value": "Who thinks"
+  },
+  "aiHub.bulk.sub": {
+    "value": "Pick the AI, then the agents that take it."
+  },
+  "aiHub.choice.workspace": {
+    "value": "The workspace's"
+  },
+  "aiHub.choice.none": {
+    "value": "Pick an account"
+  },
+  "aiHub.choice.search": {
+    "value": "Search by name, AI, plan or owner"
+  },
+  "aiHub.choice.noMatch": {
+    "value": "No account matches."
+  },
+  "aiHub.choice.noModel": {
+    "value": "No model matches."
+  },
+  "aiHub.choice.groups.yours": {
+    "value": "Yours"
+  },
+  "aiHub.choice.groups.others": {
+    "value": "The team's"
+  },
+  "aiHub.choice.groups.keys": {
+    "value": "The workspace's"
+  },
+  "aiHub.order.title": {
+    "value": "Order of use"
+  },
+  "aiHub.order.tip": {
+    "value": "Which account agents use first"
+  },
+  "aiHub.order.sub": {
+    "value": "At a limit, agents move on to the next account."
+  },
+  "aiHub.order.group": {
+    "value": "{{maker}} · {{computer}}"
+  },
+  "aiHub.order.signedOut": {
+    "value": "Signed out · skipped"
+  },
+  "aiHub.order.skipped": {
+    "value": "Skipped"
+  },
+  "aiHub.order.fallback": {
+    "value": "Continue with the API key when every plan is at its limit"
+  },
+  "aiHub.order.fallbackHint": {
+    "value": "Off: agents wait for the first plan to renew. On: they go on with the workspace's API key, which is paid per use. A mission never does."
+  },
+  "aiHub.detail.limits": {
+    "value": "Limits"
+  },
+  "aiHub.detail.noLimits": {
+    "value": "No limits read yet."
+  },
+  "aiHub.detail.permissions": {
+    "value": "Permissions"
+  },
+  "aiHub.detail.saved": {
+    "value": "Permissions saved."
+  },
+  "aiHub.detail.more": {
+    "value": "More for {{name}}"
+  },
+  "aiHub.detail.manage": {
+    "value": "Manage"
+  },
+  "aiHub.detail.manageLine": {
+    "value": "Rename, sign in again, remove"
+  },
+  "aiHub.detail.manageHint": {
+    "value": "Who may rename this account, sign in to it again, remove it and change these permissions."
+  },
+  "aiHub.detail.use": {
+    "value": "Use in agents"
+  },
+  "aiHub.detail.useLine": {
+    "value": "Pick it in Who thinks"
+  },
+  "aiHub.detail.useHint": {
+    "value": "Whose agents may think with this account."
+  },
+  "aiHub.detail.reply": {
+    "value": "Answer everyone"
+  },
+  "aiHub.detail.replyLine": {
+    "value": "Who agents on it talk to"
+  },
+  "aiHub.detail.replyHint": {
+    "value": "Who an agent on this account answers besides its own owner."
+  },
+  "aiHub.detail.claudeTerms": {
+    "value": "Under Claude's terms a personal plan is one person's. Sharing it is a gray area."
+  },
+  "aiHub.detail.pickRoles": {
+    "value": "The people who hold these roles."
+  },
+  "aiHub.detail.pickPeople": {
+    "value": "Besides the account's owner."
+  },
+  "aiHub.detail.searchRoles": {
+    "value": "Search roles"
+  },
+  "aiHub.detail.searchPeople": {
+    "value": "Search people"
+  },
+  "aiHub.detail.nobody": {
+    "value": "Nobody to pick."
+  },
+  "aiHub.modes.owner": {
+    "value": "Only you"
+  },
+  "aiHub.modes.ownerOf": {
+    "value": "Only {{name}}"
+  },
+  "aiHub.modes.admins": {
+    "value": "You and admins"
+  },
+  "aiHub.modes.adminsOf": {
+    "value": "{{name}} and admins"
+  },
+  "aiHub.modes.roles": {
+    "value": "Roles…"
+  },
+  "aiHub.modes.people": {
+    "value": "People…"
+  },
+  "aiHub.modes.everyone": {
+    "value": "Everyone"
+  },
+  "aiHub.modes.replyOwner": {
+    "value": "Only the agent's owner"
+  },
+  "aiAccounts.useReason.signed_out": {
+    "value": "Signed out"
+  },
+  "aiAccounts.useReason.owner_left": {
+    "value": "{{owner}} left the workspace"
+  },
+  "aiAccounts.useReason.owner_only": {
+    "value": "Only {{owner}} uses it"
+  },
+  "aiAccounts.useReason.not_allowed": {
+    "value": "Not open to your agents"
+  },
   "aiAccounts.unnamed": {
     "value": "Unnamed account"
   },
@@ -39493,6 +39664,9 @@
   },
   "errors.account.notOwner": {
     "value": "Only the person who connected this account or plan can do this."
+  },
+  "errors.account.permissionForbidden": {
+    "value": "Only the account's owner, an admin or whoever may manage it can change this."
   },
   "errors.account.orderForbidden": {
     "value": "Only the person who connected this account or an admin can change its place in the order."

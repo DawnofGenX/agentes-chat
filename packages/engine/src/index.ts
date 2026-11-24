@@ -14,6 +14,7 @@ export * from "./agent-style";
 export * from "./agent-undo";
 export * from "./agent-work";
 export * from "./agents";
+export * from "./ai-accounts";
 export * from "./ai-accounts-analytics";
 export * from "./ai-intent";
 export * from "./ai-status";

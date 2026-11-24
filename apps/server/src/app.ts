@@ -18,8 +18,9 @@ import installScript from "../../../install.sh" with { type: "text" };
 import { registerAppLinks } from "./app-links";
 import { authHandler, signInPageUrl } from "./auth";
 import { apiBodyLimit } from "./http/body-limit";
-import { errorPages } from "./http/error-page";
+import { errorPages, isPageRequest } from "./http/error-page";
 import { apiError, domainErrorResponse, routeOf, validationHook } from "./http/errors";
+import { busyResponse } from "./load-shed";
 import { createLogger, type Logger, loggedPath } from "./logger";
 import { ownHosts } from "./operator/hosts";
 import { directPushSenders, relayServeSender } from "./push-senders";
@@ -107,6 +108,8 @@ export interface AppOptions {
   pingDatabase: () => Promise<void>;
   /** True once the server is shutting down: `/api/health` answers 503. */
   draining?: () => boolean;
+  /** Why this process is overloaded now (`watchLoad`), or null: the apps' reads (and `/api/health?load=1`) answer 503. */
+  overloaded?: () => string | null;
   /** Needed when modules register routes. */
   moduleContext?: ModuleContext;
   /** Database, auth and adapters. Without them only system routes are mounted (some tests). */
@@ -171,6 +174,7 @@ export function createApp(options: AppOptions) {
     modules: options.modules.map((m) => m.name),
     pingDatabase: options.pingDatabase,
     draining: options.draining,
+    overloaded: options.overloaded,
   });
 
   if (options.services) {
@@ -376,6 +380,17 @@ export function createApp(options: AppOptions) {
   });
   // A link a person opens in a browser that the API refuses: our page, never the JSON on screen (ADR 0157).
   app.use("/api/*", errorPages(options.services?.config.PUBLIC_URL));
+  // A late event loop or slow database: the apps' reads wait for a calmer moment (or, behind a proxy, another
+  // process); writes carry on. A full socket count turns new sockets away only.
+  const overloaded = options.overloaded;
+  if (overloaded) {
+    app.use("/api/app/*", async (c, next) => {
+      // A link a person opened (a provider's OAuth return with its one-time code, a download, an invite) is no read.
+      const read = c.req.method === "GET" && !isPageRequest(c.req.raw.headers, "GET");
+      const why = read ? overloaded() : null;
+      return why && why !== "sockets" ? busyResponse() : next();
+    });
+  }
   app.route("/api", api);
   if (options.services) {
     registerConnectScripts(app, { log, ...options.services });
