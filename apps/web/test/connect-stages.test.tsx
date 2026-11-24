@@ -18,6 +18,8 @@ const type = async (el: Element, value: string, rounds = 2) => {
   await settle(rounds);
 };
 const flow = () => screen().getAllByRole("dialog").at(-1) as HTMLElement;
+/** A state for CI's geometry check (laid out at 1280, 390 and 320). */
+const snapshot = () => (globalThis as { geometrySnapshot?: () => void }).geometrySnapshot?.();
 /** The dialog header's back: a stage back. */
 const back = () => within(flow()).getByRole("button", { name: "Voltar" });
 const connectCalls = (state: ReturnType<typeof seedState>) =>
@@ -30,6 +32,7 @@ async function byAddress(address: string, state = seedState()) {
   await click(screen().getByRole("button", { name: "Conectar pelo endereço" }));
   expect(screen().getByRole("dialog", { name: "Conectar um servidor" })).toBe(flow());
   await type(within(flow()).getByLabelText("Qual é o endereço do servidor?"), address);
+  snapshot();
   await click(within(flow()).getByRole("button", { name: "Continuar" }), 4);
   return state;
 }
@@ -47,6 +50,7 @@ describe("connecting a server by address, in stages", () => {
     const open = () => within(flow()).getByRole("link", { name: "Abrir o acme.com" });
     expect(open().getAttribute("href")).toBe("https://auth.example.com/authorize?client_id=c1&state=paste-1");
     expect([open().getAttribute("target"), open().getAttribute("rel")]).toEqual(["_blank", "noopener noreferrer"]);
+    snapshot();
 
     // Back a stage: the address as it was typed, and Continue asks again.
     await click(back());
@@ -63,6 +67,7 @@ describe("connecting a server by address, in stages", () => {
     await type(field(), "https://acme.com/entrar");
     expect(flow().textContent).toContain("Esse não é o endereço dessa página. Ele começa com http://localhost.");
     expect(field().getAttribute("aria-invalid")).toBe("true");
+    snapshot();
     await type(field(), "http://localhost:8976/callback?error=access_denied&state=paste-2");
     expect(flow().textContent).toContain("O acme.com não foi autorizado. Abra de novo para tentar outra vez.");
     // Another authorization's address (the first one, opened before going back) is not this one.
@@ -90,6 +95,7 @@ describe("connecting a server by address, in stages", () => {
     expect(flow().querySelector(".machine-command__code")?.textContent).toBe(
       "https://chat.example.com/api/app/connectors/oauth/callback",
     );
+    snapshot();
 
     await click(within(flow()).getByRole("button", { name: "Já criei" }));
     expect(within(flow()).getByLabelText("Cole o ID do app")).toBeTruthy();
@@ -101,6 +107,7 @@ describe("connecting a server by address, in stages", () => {
     ).toBe("false");
     await click(within(flow()).getByRole("button", { name: "Salvar e continuar" }));
     expect(flow().textContent).toContain("Cole o ID do cliente do app.");
+    snapshot();
     await click(back());
     expect(flow().textContent).toContain("O vendor.com só aceita apps que ele aprovou");
 
@@ -110,6 +117,7 @@ describe("connecting a server by address, in stages", () => {
     expect(within(flow()).getByRole("button", { name: "Usar um app seu" })).toBeTruthy();
     await click(within(flow()).getByRole("button", { name: "Conectar com a chave" }));
     expect(flow().textContent).toContain("Cole a chave de API (pelo menos 8 caracteres).");
+    snapshot();
     await type(within(flow()).getByLabelText("Chave de API"), "fake-key-12345");
     await click(within(flow()).getByRole("button", { name: "Conectar com a chave" }), 6);
     expect(connectCalls(state).at(-1)).toMatchObject({
@@ -118,6 +126,7 @@ describe("connecting a server by address, in stages", () => {
       apiKey: "[redacted]",
     });
     expect(screen().getByRole("dialog", { name: "vendor.com conectado" })).toBe(flow());
+    snapshot();
   });
 
   test("a member refused the same way: the key, and that an admin can do the rest", async () => {

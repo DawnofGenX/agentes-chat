@@ -5560,8 +5560,11 @@ html:not([data-pointer]) .cflow__more summary:focus-visible {
   margin-top: var(--space-3);
 }
 /* After "For whom" the dialog's own gap is the space: a field ends on its own line, not on running text. Under a
-   line of "Other ways to connect", its body's gap is. */
+   line of "Other ways to connect", its body's gap is, and under a stage's question (or the server's words) the
+   dialog's. */
 .ac-field + .cflow__key,
+.cflow__ask + .cflow__key,
+.cflow__said + .cflow__key,
 .ac-optrow__more > .cflow__key,
 .ac-setmore__body > .cflow__headers {
   margin-top: 0;
@@ -5834,6 +5837,10 @@ html:not([data-pointer]) .cflow__more summary:focus-visible {
   display: block;
   margin-top: 4px;
   overflow-wrap: anywhere;
+}
+/* A stage's own line under its question or our address: the body's gap is its room. */
+.cflow__body > .cflow__said {
+  margin-top: 0;
 }
 .cflow__lead {
   display: flex;
