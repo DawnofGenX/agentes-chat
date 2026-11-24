@@ -14,6 +14,8 @@ import {
   insertMessage,
   isHowTo,
   isPlaybook,
+  isPromotable,
+  isQuote,
   LEARNED_EXPIRE_DAYS,
   learnRun,
   learnTrust,
@@ -22,6 +24,7 @@ import {
   normalizeSubject,
   openPersonAgentDm,
   postPersonMessage,
+  proposeFromItem,
   recordContextUse,
   retrieveForRun,
   SKILL_MIN_SPREAD,
@@ -470,6 +473,42 @@ describe("agents learn on their own (ADR 0120)", () => {
     await f.db.update(schema.contextItems).set({ recurrence: 10, relevance: 0.9 });
     await consolidateOrg(f.context, f.org.id);
     expect(await f.db.select().from(schema.skills)).toEqual([]);
+  });
+
+  test("a person's long message kept after outside content stays memory: never pasted into the agent's instructions", async () => {
+    f = await setup();
+    const long = `@dev ${"Quero chegar a cem parceiros até março, falando com cada um antes de mexer no documento. ".repeat(60)}`;
+    const { run } = await personRun(long);
+    await step(run, "read_issue", { id: "1" }, '<external_data untrusted="true">Partner list</external_data>');
+    await invoke(run, "remember", {
+      kind: "preference",
+      title: "Talk before editing the doc",
+      content: "Wants to talk before anyone edits the partners doc.",
+      basis: "person_said",
+    });
+    await invoke(run, "remember", {
+      kind: "fact",
+      title: "Goal: 100 partners",
+      content: "The goal is 100 partners by March.",
+      basis: "person_said",
+    });
+    const kept = await items();
+    expect(kept.map((i) => [i.trust, i.verified, isQuote(i)])).toEqual([
+      ["high", true, true],
+      ["high", true, true],
+    ]);
+    for (const item of kept) {
+      const strong = { ...item, recurrence: 5, confidence: 1, relevance: 1 };
+      expect(isPromotable(strong)).toBe(false);
+      expect(await proposeFromItem(f, strong)).toBeNull();
+    }
+    // An agent's fact in its own words is memory too; the workspace's still goes to its context.
+    const fact = { ...(kept[0] as (typeof kept)[number]), evidence: [], kind: "fact" as const, recurrence: 5 };
+    expect(isPromotable({ ...fact, evidence: [{ type: "human" as const, ref: "m", at: "" }] })).toBe(false);
+    expect(isPromotable({ ...fact, agentId: null, evidence: [{ type: "human" as const, ref: "m", at: "" }] })).toBe(
+      true,
+    );
+    expect(await f.db.select().from(schema.contextProposals)).toEqual([]);
   });
 
   test("who holds which access becomes a workspace fact every agent reads, from a browser run too, kept current", async () => {
