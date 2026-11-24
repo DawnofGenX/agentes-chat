@@ -5,7 +5,8 @@
  * - POST   /api/app/organizations/{orgId}/connectors/custom { serverUrl, apiKey?, label?, returnTo, connectionId?, headers?, paste? }
  *          → { status: "connected", server, outcome } | { status: "oauth", authorizeUrl, paste? } | { status: "needs_key" }
  *          (a URL containing "loopback" took only the loopback address: with `paste`, an authorization whose return
- *          the app pastes, finished by `completePasted`; without, `needs_key` with `not_approved`)
+ *          the app pastes, finished by `completePasted`; without, `needs_key` with `not_approved`; one containing
+ *          "closed" lets in only apps it approved: `needs_key` with `not_approved` and the server's words)
  *          (the same address again is another account, "Name 2", which no agent uses; `connectionId`
  *          reconnects that account in place; `headers` alone connect, are refused with a sign-in, and on a
  *          reconnect stay when absent, go with `[]` and are replaced by a list)
@@ -124,6 +125,14 @@ export function createMockCustomConnectors(
       // Through Composio: its page signs in, back to the callback.
       if (input.serverUrl.startsWith("https://backend.composio.dev/")) {
         return { status: "oauth", authorizeUrl: "https://composio.example/connect/ca_1?state=s" };
+      }
+      // Lets in only apps it approved, whatever address: an admin's own app or a key.
+      if (input.serverUrl.includes("closed") && !input.apiKey && !input.headers?.length) {
+        return {
+          status: "needs_key",
+          reason: "not_approved",
+          detail: "invalid_client_metadata: Dynamic registration is not available for this client.",
+        };
       }
       if (input.serverUrl.includes("loopback") && !input.apiKey && !input.headers?.length) {
         if (!input.paste) return { status: "needs_key", reason: "not_approved" };

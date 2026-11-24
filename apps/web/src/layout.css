@@ -5602,34 +5602,24 @@ html:not([data-pointer]) .cflow__more summary:focus-visible {
   align-items: center;
   gap: var(--space-2) var(--space-3);
 }
-/* A sign-in whose return is pasted (ConnectPaste, ADR 0016 addendum 2026-11-23). Where the dialog stands: one line,
-   the working orbit or a mark before its words, the words under it. */
-.cflow-paste__now {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+/* A step's address to copy (an admin's own app: the redirect URI) takes the step's width and wraps whole on a phone. */
+.agp-addacct__text > .machine-command {
+  align-self: stretch;
 }
-.cflow-paste__state {
-  margin: 0;
-  font-size: 15px;
-  line-height: 22px;
-  font-weight: 600;
-  color: var(--ink);
+.agp-addacct__text > .machine-command > .machine-command__code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
-.cflow-paste__state > .ac-icon {
-  flex: none;
-}
-.cflow-paste {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
+/* A sign-in whose return is pasted (ConnectPaste, ADR 0016 addendum 2026-11-23): its second step shows the page to
+   copy from. */
 /* The page that doesn't load, drawn as the app's scenes are: a pixel window rising from a dithered ground. One
    surface, the band; the window is a drawing on it, with pixel corners and no shadow. */
 .cflow-paste__scene {
   --px: 3px;
   position: relative;
-  height: 172px;
+  display: block;
+  height: 132px;
+  margin: 6px 0 2px;
   border-radius: var(--radius-lg);
   overflow: hidden;
   isolation: isolate;
@@ -5645,9 +5635,9 @@ html:not([data-pointer]) .cflow__more summary:focus-visible {
 .cflow-paste__win {
   position: absolute;
   left: 50%;
-  top: 26px;
+  top: 22px;
   translate: -50% 0;
-  width: min(440px, calc(100% - 40px));
+  width: min(400px, calc(100% - 32px));
   height: 200px;
   box-sizing: border-box;
   background: var(--surface-raised);
@@ -5745,18 +5735,6 @@ html:not([data-pointer]) .cflow__more summary:focus-visible {
 .cflow-paste__page > i::after {
   height: 4px;
 }
-.cflow-paste__where {
-  margin: 0;
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--ink-muted);
-}
-/* "Didn't open? Open … again": the link right after the question, in the note's size. */
-.cflow-paste__again > .ac-link {
-  margin-inline-start: 0;
-  font-size: inherit;
-}
-
 /* The server's own words under ours: its codes are long unbroken words. */
 .cflow__said {
   display: block;

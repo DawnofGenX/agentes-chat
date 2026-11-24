@@ -15265,32 +15265,47 @@ export const ptBR = {
     },
     /** A server that took only the loopback address: its sign-in ends on a page that doesn't load, pasted back here. */
     paste: {
-      intro:
-        "O {{name}} abre em outra aba. Depois de autorizar, ele mostra uma página que não carrega. É assim mesmo: copie o endereço dela e volte aqui.",
-      where: "É o endereço na barra do navegador, o que começa com localhost.",
+      lead: "O {{name}} não volta direto para o agentes.chat. Dá para conectar em dois passos.",
+      steps: "Como conectar",
+      stepOpen: "Entre no {{name}} e autorize",
+      stepOpenText: "Abre numa aba nova.",
+      open: "Abrir o {{name}}",
+      openAgain: "Abrir de novo",
+      stepPaste: "Cole o endereço da última página",
+      stepPasteText:
+        "No fim, o {{name}} abre uma página que não carrega. É assim mesmo: copie o endereço dela e cole aqui.",
       /** The browser's own words on that page, drawn in the picture. */
       unreachable: "Não é possível acessar esse site",
-      open: "Abrir o {{name}}",
-      waiting: "Esperando você voltar do {{name}}",
-      waitingText: "Autorize lá e copie o endereço da página que não carregar.",
-      back: "Ainda não conectou",
-      backText: "Falta colar aqui o endereço da página que não carregou.",
-      connecting: "Conectando ao {{name}}",
-      connectingText: "Conferindo o endereço e listando as ferramentas.",
-      field: "Endereço da página que não carregou",
       paste: "Colar",
       pasteFailed: "O navegador não deixou colar. Cole com Ctrl+V (⌘V no Mac).",
-      wrong: "Esse não é o endereço daquela página. Ele começa com {{start}}.",
+      wrong: "Esse não é o endereço da última página. Ele começa com {{start}}.",
       refused: "O {{name}} não foi autorizado. Abra de novo para tentar outra vez.",
-      notOpened: "Não abriu?",
-      openAgain: "Abrir o {{name}} de novo",
+      connecting: "Conectando ao {{name}}…",
+    },
+    /** A refused sign-in: why, in one line over the one way it takes. */
+    refused: {
+      own: "O {{name}} só deixa entrar apps que aprovou. Dá para conectar com um app do workspace criado lá, em três passos.",
+      key: "O {{name}} só deixa entrar apps que aprovou. Se ele te der uma chave de API, dá para conectar com ela.",
+      askAdmin:
+        "O {{name}} só deixa entrar apps que aprovou. Um admin pode conectar com um app do workspace, ou use uma chave de API se o {{name}} der uma.",
+      preferKey: "Prefere uma chave de API?",
+      useKey: "Conectar com a chave",
+      preferOwn: "Tem um app OAuth lá?",
+      useOwn: "Usar o seu app",
     },
     ownClient: {
       title: "Usar seu próprio app OAuth",
       notApproved:
         "{{name}} só deixa entrar apps que aprovou, e o agentes.chat ainda não foi aprovado. Dá para conectar com um app seu lá.",
-      askAdmin: "Um admin pode conectar com um app próprio do workspace.",
       help: "Crie um app no provedor, cadastre nele esta URI de redirecionamento e cole o ID do cliente. Toda entrada lá pelo workspace passa a usar o seu app.",
+      stepCreate: "Crie um app no {{name}}",
+      stepCreateText: "Na área de desenvolvedores do {{name}}.",
+      stepRedirect: "Cadastre nele este endereço de retorno",
+      stepRedirectText: "Nas URIs de redirecionamento OAuth do app.",
+      stepId: "Cole o ID do cliente do app",
+      more: "Chave secreta e escopos",
+      moreText: "Só se o app pedir.",
+      createIn: { metaAds: "No Meta for Developers, com o caso de uso da API de Marketing." },
       guide: {
         metaAds:
           "No Meta for Developers, crie um app com o caso de uso da API de Marketing. Adicione esta URI de redirecionamento às URIs de redirecionamento OAuth válidas dele e cole o ID do app, e a chave secreta do app se ele pedir.",

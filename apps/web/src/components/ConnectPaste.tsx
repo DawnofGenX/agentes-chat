@@ -1,19 +1,10 @@
 import { type ConnectOutcome, useCompleteOAuth } from "@agenteschat/client";
 import { errorCode, errorText } from "@agenteschat/client/lib/errors";
 import { authorizeState, pastedReturn, pastedStart } from "@agenteschat/client/lib/pasted-return";
-import {
-  AffixInput,
-  Button,
-  DialogBody,
-  DialogFooter,
-  Field,
-  Icon,
-  Locked,
-  onThemeChange,
-  SettingNote,
-} from "@agenteschat/ui";
+import { AffixInput, Button, DialogBody, DialogFooter, Locked, onThemeChange, SettingNote } from "@agenteschat/ui";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Step } from "@/components/ai/AddAccountFlow";
 import { useOrg } from "@/components/org-context";
 
 /** The authorization finished: the connection it made, and what connecting did. */
@@ -26,12 +17,11 @@ export interface PastedDone {
 const RESTARTS = new Set(["oauth.link_expired", "oauth.link_used"]);
 
 /**
- * Connecting a server that refused our callback and took only the loopback address (ADR 0016 addendum 2026-11-23):
- * the sign-in opens in another tab and ends on a page there that doesn't load; the person copies that page's address
- * and pastes it here, which finishes the connection. Before they leave, a drawing of that page shows what to copy.
- * While they are away the dialog waits; back on this tab with nothing pasted, it says so and holds the field ready.
- * The right address connects at once; anything else says what was expected. `onRestart`: the authorization expired
- * or was used, so a new one is asked for (`authorizeUrl` changes, what is on screen stays).
+ * Connecting a server that refused our callback's domain and took only the loopback address (ADR 0016 addendum
+ * 2026-11-23), in two numbered steps on one screen, as "AI accounts" signs in: open the service (another tab) and
+ * approve there; then paste the address of the page it ends on, which doesn't load. The right address connects at
+ * once; anything else, or the provider's refusal, is said under the field. `onRestart`: the authorization expired or
+ * was used, so a new one is asked for (`authorizeUrl` changes, what is on screen stays).
  */
 export function ConnectPaste({
   name,
@@ -45,7 +35,7 @@ export function ConnectPaste({
   name: string;
   authorizeUrl: string;
   redirectUri: string;
-  /** The footer's words before the person leaves and while connecting (who will be able to use it). */
+  /** The footer's words (who will be able to use it). */
   note: ReactNode;
   onDone: (done: PastedDone) => void;
   onRestart: () => void;
@@ -54,41 +44,14 @@ export function ConnectPaste({
   const { t, i18n } = useTranslation();
   const { org } = useOrg();
   const complete = useCompleteOAuth(org.id);
-  const [step, setStep] = useState<"intro" | "waiting" | "back">("intro");
+  const [opened, setOpened] = useState(false);
   const [value, setValue] = useState("");
   const [failure, setFailure] = useState<string | null>(null);
   const [pasteFailed, setPasteFailed] = useState(false);
   const field = useRef<HTMLInputElement>(null);
   const tried = useRef<string | null>(null);
-  const left = useRef(false);
   const read = pastedReturn(value, redirectUri, authorizeState(authorizeUrl));
   const busy = complete.isPending || complete.isSuccess;
-
-  // Away on the service's page, then back on this tab with nothing connected: say so, with the field ready.
-  useEffect(() => {
-    if (step !== "waiting") return;
-    const away = () => {
-      if (document.visibilityState === "hidden" || !document.hasFocus()) left.current = true;
-    };
-    const back = () => {
-      if (!left.current || document.visibilityState !== "visible") return;
-      left.current = false;
-      setStep("back");
-    };
-    document.addEventListener("visibilitychange", away);
-    window.addEventListener("blur", away);
-    document.addEventListener("visibilitychange", back);
-    window.addEventListener("focus", back);
-    return () => {
-      document.removeEventListener("visibilitychange", away);
-      window.removeEventListener("blur", away);
-      document.removeEventListener("visibilitychange", back);
-      window.removeEventListener("focus", back);
-    };
-  }, [step]);
-  useEffect(() => {
-    if (step === "back") field.current?.focus();
-  }, [step]);
 
   // The right address connects at once, once: the same text isn't sent again after a refusal.
   useEffect(() => {
@@ -123,97 +86,62 @@ export function ConnectPaste({
       ? t("connectFlow.paste.wrong", { start: pastedStart(redirectUri) })
       : read.kind === "refused"
         ? t("connectFlow.paste.refused", { name })
-        : undefined);
-  // Opening the service's page: a link, so the desktop app sends it to the browser as any other.
-  const open = (label: string, primary: boolean) => (
-    <Button asChild variant={primary ? "primary" : "link"}>
-      <a
-        href={authorizeUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={() => {
-          left.current = false;
-          setStep("waiting");
-        }}
-      >
-        {label}
-      </a>
-    </Button>
-  );
-
-  if (step === "intro") {
-    return (
-      <>
-        <DialogBody className="cflow__body">
-          <p className="muted cflow__text">{t("connectFlow.paste.intro", { name })}</p>
-          <PasteScene redirectUri={redirectUri} />
-        </DialogBody>
-        <DialogFooter bar note={note}>
-          <Button onClick={onClose}>{t("common.cancel")}</Button>
-          {open(t("connectFlow.paste.open", { name }), true)}
-        </DialogFooter>
-      </>
-    );
-  }
-
-  const now = busy
-    ? { mark: <Icon name="spinner" size={16} />, title: t("connectFlow.paste.connecting", { name }) }
-    : step === "back" || error
-      ? { mark: <Icon name="alert" size={16} />, title: t("connectFlow.paste.back") }
-      : { mark: <Icon name="spinner" size={16} />, title: t("connectFlow.paste.waiting", { name }) };
-  const text = busy
-    ? t("connectFlow.paste.connectingText")
-    : step === "back" || error
-      ? t("connectFlow.paste.backText")
-      : t("connectFlow.paste.waitingText");
+        : null);
   return (
     <>
       <DialogBody className="cflow__body">
-        <div className="cflow-paste__now">
-          <p className="cflow-paste__state ac-iconline" role="status">
-            {now.mark}
-            <span>{now.title}</span>
-          </p>
-          <p className="muted cflow__text">{text}</p>
-        </div>
-        {!busy && <PasteScene redirectUri={redirectUri} />}
-        <Locked when={busy}>
-          <Field label={t("connectFlow.paste.field")} id="cflow-paste" error={error}>
-            <AffixInput
-              ref={field}
-              value={value}
-              autoComplete="off"
-              spellCheck={false}
-              inputMode="url"
-              onChange={(e) => {
-                setValue(e.target.value);
-                setFailure(null);
-                setPasteFailed(false);
-              }}
-              action={
-                !value.trim() && (
-                  <Button variant="ghost" size="sm" icon="copy" onClick={() => void paste()}>
-                    {t("connectFlow.paste.paste")}
-                  </Button>
-                )
-              }
-            />
-          </Field>
-        </Locked>
-        {pasteFailed && <SettingNote icon="alert">{t("connectFlow.paste.pasteFailed")}</SettingNote>}
-      </DialogBody>
-      <DialogFooter
-        bar
-        note={
-          busy ? (
-            note
-          ) : (
-            <span className="cflow-paste__again">
-              {t("connectFlow.paste.notOpened")} {open(t("connectFlow.paste.openAgain", { name }), false)}
+        <p className="muted cflow__text">{t("connectFlow.paste.lead", { name })}</p>
+        <section className="agp-addacct" aria-label={t("connectFlow.paste.steps")}>
+          <Step n={1}>
+            <b>{t("connectFlow.paste.stepOpen", { name })}</b>
+            <span>{t("connectFlow.paste.stepOpenText")}</span>
+            <span className="agp-addacct__acts">
+              {/* A link, so the desktop app's window sends it to the browser as any other. */}
+              <Button asChild size="sm" variant={opened ? "default" : "primary"}>
+                <a href={authorizeUrl} target="_blank" rel="noopener noreferrer" onClick={() => setOpened(true)}>
+                  {opened ? t("connectFlow.paste.openAgain") : t("connectFlow.paste.open", { name })}
+                </a>
+              </Button>
             </span>
-          )
-        }
-      >
+          </Step>
+          <Step n={2}>
+            <label htmlFor="cflow-paste">
+              <b>{t("connectFlow.paste.stepPaste")}</b>
+            </label>
+            <span>{t("connectFlow.paste.stepPasteText", { name })}</span>
+            <PasteScene redirectUri={redirectUri} />
+            <span className="agp-addacct__paste">
+              <Locked when={busy}>
+                <AffixInput
+                  ref={field}
+                  id="cflow-paste"
+                  value={value}
+                  placeholder={`${redirectUri}?code=…`}
+                  autoComplete="off"
+                  spellCheck={false}
+                  inputMode="url"
+                  aria-invalid={error ? true : undefined}
+                  onChange={(e) => {
+                    setValue(e.target.value);
+                    setFailure(null);
+                    setPasteFailed(false);
+                  }}
+                  action={
+                    !value.trim() && (
+                      <Button variant="ghost" size="sm" icon="copy" onClick={() => void paste()}>
+                        {t("connectFlow.paste.paste")}
+                      </Button>
+                    )
+                  }
+                />
+              </Locked>
+            </span>
+            {error && <SettingNote icon="alert">{error}</SettingNote>}
+            {pasteFailed && <SettingNote icon="alert">{t("connectFlow.paste.pasteFailed")}</SettingNote>}
+          </Step>
+        </section>
+      </DialogBody>
+      <DialogFooter bar note={note} busyNote={busy ? t("connectFlow.paste.connecting", { name }) : undefined}>
         <Button disabled={busy} onClick={onClose}>
           {t("common.cancel")}
         </Button>
@@ -223,9 +151,9 @@ export function ConnectPaste({
 }
 
 /**
- * The page that doesn't load, drawn the way the app draws its scenes: a browser window in pixels rising from a dithered
- * ground, its address selected as text is right before it is copied. The address and the page's words are real text,
- * so the person knows the page when they get there. Decorative for screen readers: the words around it say the same.
+ * The page that doesn't load, drawn as the app draws its scenes: a pixel browser window rising from a dithered ground,
+ * its address selected as text is right before it is copied. The address and the page's words are real text, so the
+ * person knows the page when they get there. Decorative for screen readers: the step's words say the same.
  */
 function PasteScene({ redirectUri }: { redirectUri: string }) {
   const { t } = useTranslation();
@@ -245,28 +173,25 @@ function PasteScene({ redirectUri }: { redirectUri: string }) {
     };
   }, []);
   return (
-    <div className="cflow-paste">
-      <div className="cflow-paste__scene" aria-hidden="true">
-        <canvas ref={ground} className="cflow-paste__ground" />
-        <div className="cflow-paste__win">
-          <div className="cflow-paste__top">
-            <span className="cflow-paste__dots">
-              <i />
-              <i />
-              <i />
-            </span>
-            <span className="cflow-paste__addr">
-              <span>{`${url.host}${url.pathname}?code=…&state=…`}</span>
-            </span>
-          </div>
-          <div className="cflow-paste__page">
+    <span className="cflow-paste__scene" aria-hidden="true">
+      <canvas ref={ground} className="cflow-paste__ground" />
+      <span className="cflow-paste__win">
+        <span className="cflow-paste__top">
+          <span className="cflow-paste__dots">
             <i />
-            <span>{t("connectFlow.paste.unreachable")}</span>
-          </div>
-        </div>
-      </div>
-      <p className="cflow-paste__where">{t("connectFlow.paste.where")}</p>
-    </div>
+            <i />
+            <i />
+          </span>
+          <span className="cflow-paste__addr">
+            <span>{`${url.host}${url.pathname}?code=…`}</span>
+          </span>
+        </span>
+        <span className="cflow-paste__page">
+          <i />
+          <span>{t("connectFlow.paste.unreachable")}</span>
+        </span>
+      </span>
+    </span>
   );
 }
 

@@ -15294,25 +15294,33 @@ export const en = {
     },
     /** A server that took only the loopback address: its sign-in ends on a page that doesn't load, pasted back here. */
     paste: {
-      intro:
-        "{{name}} opens in another tab. Once you approve, it shows a page that doesn't load. That's expected: copy its address and come back here.",
-      where: "It's the address in the browser's bar, the one that starts with localhost.",
+      lead: "{{name}} doesn't send you straight back to agentes.chat. Connect it in two steps.",
+      steps: "How to connect",
+      stepOpen: "Sign in to {{name}} and approve",
+      stepOpenText: "It opens in a new tab.",
+      open: "Open {{name}}",
+      openAgain: "Open again",
+      stepPaste: "Paste the address of the last page",
+      stepPasteText:
+        "At the end, {{name}} opens a page that doesn't load. That's expected: copy its address and paste it here.",
       /** The browser's own words on that page, drawn in the picture. */
       unreachable: "This site can't be reached",
-      open: "Open {{name}}",
-      waiting: "Waiting for you to come back from {{name}}",
-      waitingText: "Approve it there and copy the address of the page that doesn't load.",
-      back: "Not connected yet",
-      backText: "Paste the address of the page that didn't load here.",
-      connecting: "Connecting to {{name}}",
-      connectingText: "Checking the address and listing the tools.",
-      field: "Address of the page that didn't load",
       paste: "Paste",
       pasteFailed: "The browser didn't let us paste. Paste with Ctrl+V (⌘V on a Mac).",
-      wrong: "That's not the address of that page. It starts with {{start}}.",
+      wrong: "That's not the address of the last page. It starts with {{start}}.",
       refused: "{{name}} wasn't approved. Open it again to try once more.",
-      notOpened: "Didn't open?",
-      openAgain: "Open {{name}} again",
+      connecting: "Connecting to {{name}}…",
+    },
+    /** A refused sign-in: why, in one line over the one way it takes. */
+    refused: {
+      own: "{{name}} only lets in apps it approved. Connect it with an app of the workspace's own made there, in three steps.",
+      key: "{{name}} only lets in apps it approved. If it gives you an API key, you can connect with it.",
+      askAdmin:
+        "{{name}} only lets in apps it approved. An admin can connect it with an app of the workspace's own, or you can use an API key if {{name}} gives you one.",
+      preferKey: "Rather use an API key?",
+      useKey: "Connect with a key",
+      preferOwn: "Have an OAuth app there?",
+      useOwn: "Use your own app",
     },
     /**
      * A server that lets in only OAuth apps it approved (Meta Ads): an admin registers an app of the workspace's own
@@ -15323,8 +15331,15 @@ export const en = {
       title: "Use your own OAuth app",
       notApproved:
         "{{name}} only lets in apps it approved, and agentes.chat isn't one yet. You can connect it with your own app there.",
-      askAdmin: "An admin can connect it with the workspace's own app.",
       help: "Create an app at the provider, register this redirect URI in it and paste its client ID. Every sign-in there from the workspace then uses your app.",
+      stepCreate: "Make an app at {{name}}",
+      stepCreateText: "In {{name}}'s developer settings.",
+      stepRedirect: "Add this redirect address to it",
+      stepRedirectText: "Among the app's OAuth redirect URIs.",
+      stepId: "Paste the app's client ID",
+      more: "Client secret and scopes",
+      moreText: "Only if the app asks for them.",
+      createIn: { metaAds: "In Meta for Developers, with the Marketing API use case." },
       guide: {
         metaAds:
           "In Meta for Developers, create an app with the Marketing API use case. Add this redirect URI to its valid OAuth redirect URIs, then paste the App ID, and the App Secret if your app requires it.",
