@@ -5610,21 +5610,41 @@ html:not([data-pointer]) .cflow__more summary:focus-visible {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-/* A sign-in whose return is pasted (ConnectPaste, ADR 0016 addendum 2026-11-23): its second step shows the page to
-   copy from. */
-/* The page that doesn't load, drawn as the app's scenes are: a pixel window rising from a dithered ground. One
-   surface, the band; the window is a drawing on it, with pixel corners and no shadow. */
-.cflow-paste__scene {
-  --px: 3px;
-  position: relative;
-  display: block;
-  height: 132px;
-  margin: 6px 0 2px;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  isolation: isolate;
+/* Connecting a server in stages (ADR 0016 addendum 2026-11-23): each one asks one thing, its question large with a line
+   under it, and at most one field, large. */
+.cflow__ask {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
-.cflow-paste__ground {
+.cflow__question {
+  margin: 0;
+  font-size: 20px;
+  line-height: 26px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+.cflow__big {
+  display: block;
+}
+.cflow__big .ac-input,
+.cflow__big .ac-input-affix {
+  min-height: 52px;
+  font-size: 17px;
+}
+.cflow__big .ac-input-affix input {
+  font-size: 17px;
+}
+/* "Connect another way": a quiet link under the address, at its start. */
+.cflow__other {
+  align-self: flex-start;
+  margin-inline-start: 0;
+  font-size: 14px;
+}
+/* A scene's ground (ConnectPaste `useGround`): the dialog's surface dithered toward its ink. */
+.cflow-ground {
   position: absolute;
   inset: 0;
   z-index: var(--z-under);
@@ -5632,12 +5652,82 @@ html:not([data-pointer]) .cflow__more summary:focus-visible {
   height: 100%;
   image-rendering: pixelated;
 }
+/* Our agent (the engine's) and the service's tile on that ground, a pixel trail between them lit to where it has come. */
+.cflow-scene {
+  position: relative;
+  display: block;
+  height: 148px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  isolation: isolate;
+}
+.cflow-scene__row {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+.cflow-scene__agent {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+}
+.cflow-scene__trail {
+  display: flex;
+  gap: 6px;
+}
+.cflow-scene__trail > i {
+  width: 7px;
+  height: 7px;
+  background: var(--ink);
+  opacity: 0.14;
+}
+.cflow-scene__trail > i[data-on] {
+  opacity: 0.85;
+}
+.cflow-scene__trail > i[data-next] {
+  opacity: 0.4;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .cflow-scene__trail > i[data-next] {
+    animation: cflow-trail 1.2s steps(2, jump-none) infinite;
+  }
+}
+@keyframes cflow-trail {
+  from {
+    opacity: 0.14;
+  }
+  to {
+    opacity: 0.85;
+  }
+}
+.cflow-scene .connector-icon--lg {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  font-size: 20px;
+}
+/* A sign-in whose return is pasted (ConnectPaste): the page to copy from, drawn. */
+/* The page that doesn't load, drawn as the app's scenes are: a pixel window rising from a dithered ground. One
+   surface, the band; the window is a drawing on it, with pixel corners and no shadow. */
+.cflow-paste__scene {
+  --px: 3px;
+  position: relative;
+  display: block;
+  height: 148px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  isolation: isolate;
+}
 .cflow-paste__win {
   position: absolute;
   left: 50%;
-  top: 22px;
+  top: 26px;
   translate: -50% 0;
-  width: min(400px, calc(100% - 32px));
+  width: min(420px, calc(100% - 40px));
   height: 200px;
   box-sizing: border-box;
   background: var(--surface-raised);

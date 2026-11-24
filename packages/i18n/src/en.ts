@@ -15235,7 +15235,7 @@ export const en = {
     steps: "Steps",
     step: { "0": "Connect", "1": "What it does", "2": "Who can use it" },
     connectTitle: "Connect {{name}}",
-    customTitle: "Connect an MCP server",
+    customTitle: "Connect a server",
     toolsTitle: "What {{name}} does",
     whoTitle: "Who can use {{name}}",
     oauthHelp: "You authorize on {{name}}'s page and come back here.",
@@ -15292,35 +15292,53 @@ export const en = {
       own: "With your own OAuth app",
       ownText: "For a server that only lets in apps it approved.",
     },
-    /** A server that took only the loopback address: its sign-in ends on a page that doesn't load, pasted back here. */
+    /** The address alone, first: its name comes from it, who can use it is a link in the footer. */
+    address: {
+      question: "What's the server's address?",
+      lead: "Paste the MCP address the service gave you. We'll work out the rest.",
+      continue: "Continue",
+      other: "Connect another way",
+      team: "The whole team will be able to use it.",
+      justMe: "Only me",
+      mine: "Only you will be able to use it.",
+      toTeam: "For the team",
+    },
+    /** A server that took only the loopback address: open it, then paste the address of the page it ends on. */
     paste: {
-      lead: "{{name}} doesn't send you straight back to agentes.chat. Connect it in two steps.",
-      steps: "How to connect",
-      stepOpen: "Sign in to {{name}} and approve",
-      stepOpenText: "It opens in a new tab.",
+      openTitle: "Sign in to {{name}} and approve",
+      openText:
+        "It opens in a new tab. At the end, {{name}} shows a page that doesn't load: that's the one you bring back here.",
       open: "Open {{name}}",
-      openAgain: "Open again",
-      stepPaste: "Paste the address of the last page",
-      stepPasteText:
-        "At the end, {{name}} opens a page that doesn't load. That's expected: copy its address and paste it here.",
+      pasteTitle: "Paste that page's address",
+      pasteText: "It's the one in the browser's bar, starting with localhost. Once pasted, it connects.",
       /** The browser's own words on that page, drawn in the picture. */
       unreachable: "This site can't be reached",
       paste: "Paste",
       pasteFailed: "The browser didn't let us paste. Paste with Ctrl+V (⌘V on a Mac).",
-      wrong: "That's not the address of the last page. It starts with {{start}}.",
+      wrong: "That's not that page's address. It starts with {{start}}.",
       refused: "{{name}} wasn't approved. Open it again to try once more.",
       connecting: "Connecting to {{name}}…",
+      notOpened: "Didn't open?",
+      openAgain: "Open {{name}} again",
     },
-    /** A refused sign-in: why, in one line over the one way it takes. */
+    /** A refused sign-in, in stages: an admin's own app (register our address, then paste its ID), or a key. */
     refused: {
-      own: "{{name}} only lets in apps it approved. Connect it with an app of the workspace's own made there, in three steps.",
-      key: "{{name}} only lets in apps it approved. If it gives you an API key, you can connect with it.",
+      ownTitle: "{{name}} only lets in apps it approved",
+      ownText: "Make an app in {{name}}'s developer settings and add this redirect address to it.",
+      ownTextIn: {
+        metaAds:
+          "In Meta for Developers, make an app with the Marketing API use case and add this redirect address to it.",
+      },
+      created: "Done",
+      idTitle: "Paste the app's ID",
+      idText: "It's on the page of the app you made at {{name}}.",
+      keyTitle: "{{name}} asks for an API key",
+      keyText: "You'll find the key in {{name}}'s settings. It's kept encrypted and nobody sees it again.",
+      key: "If it gives you an API key, you can connect with it.",
       askAdmin:
-        "{{name}} only lets in apps it approved. An admin can connect it with an app of the workspace's own, or you can use an API key if {{name}} gives you one.",
-      preferKey: "Rather use an API key?",
+        "An admin can connect it with an app of the workspace's own, or you can use an API key if {{name}} gives you one.",
       useKey: "Connect with a key",
-      preferOwn: "Have an OAuth app there?",
-      useOwn: "Use your own app",
+      useOwn: "Use an app of your own",
     },
     /**
      * A server that lets in only OAuth apps it approved (Meta Ads): an admin registers an app of the workspace's own

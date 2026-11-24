@@ -15206,7 +15206,7 @@ export const ptBR = {
     steps: "Passos",
     step: { "0": "Conectar", "1": "O que faz", "2": "Quem pode usar" },
     connectTitle: "Conectar {{name}}",
-    customTitle: "Conectar servidor MCP",
+    customTitle: "Conectar um servidor",
     toolsTitle: "O que {{name}} faz",
     whoTitle: "Quem pode usar {{name}}",
     oauthHelp: "Você autoriza na página do {{name}} e volta para cá.",
@@ -15263,35 +15263,52 @@ export const ptBR = {
       own: "Com um app OAuth seu",
       ownText: "Para o servidor que só deixa entrar apps que aprovou.",
     },
-    /** A server that took only the loopback address: its sign-in ends on a page that doesn't load, pasted back here. */
+    /** The address alone, first: its name comes from it, who can use it is a link in the footer. */
+    address: {
+      question: "Qual é o endereço do servidor?",
+      lead: "Cole o endereço MCP que o serviço te deu. O resto a gente descobre.",
+      continue: "Continuar",
+      other: "Conectar de outro jeito",
+      team: "Toda a equipe vai poder usar.",
+      justMe: "Só para mim",
+      mine: "Só você vai poder usar.",
+      toTeam: "Para a equipe",
+    },
+    /** A server that took only the loopback address: open it, then paste the address of the page it ends on. */
     paste: {
-      lead: "O {{name}} não volta direto para o agentes.chat. Dá para conectar em dois passos.",
-      steps: "Como conectar",
-      stepOpen: "Entre no {{name}} e autorize",
-      stepOpenText: "Abre numa aba nova.",
+      openTitle: "Entre no {{name}} e autorize",
+      openText:
+        "Abre numa aba nova. No fim, o {{name}} mostra uma página que não carrega: é ela que você traz para cá.",
       open: "Abrir o {{name}}",
-      openAgain: "Abrir de novo",
-      stepPaste: "Cole o endereço da última página",
-      stepPasteText:
-        "No fim, o {{name}} abre uma página que não carrega. É assim mesmo: copie o endereço dela e cole aqui.",
+      pasteTitle: "Cole o endereço dessa página",
+      pasteText: "É o que está na barra do navegador, começando com localhost. Colou, conecta.",
       /** The browser's own words on that page, drawn in the picture. */
       unreachable: "Não é possível acessar esse site",
       paste: "Colar",
       pasteFailed: "O navegador não deixou colar. Cole com Ctrl+V (⌘V no Mac).",
-      wrong: "Esse não é o endereço da última página. Ele começa com {{start}}.",
+      wrong: "Esse não é o endereço dessa página. Ele começa com {{start}}.",
       refused: "O {{name}} não foi autorizado. Abra de novo para tentar outra vez.",
       connecting: "Conectando ao {{name}}…",
+      notOpened: "Não abriu?",
+      openAgain: "Abrir o {{name}} de novo",
     },
-    /** A refused sign-in: why, in one line over the one way it takes. */
+    /** A refused sign-in, in stages: an admin's own app (register our address, then paste its ID), or a key. */
     refused: {
-      own: "O {{name}} só deixa entrar apps que aprovou. Dá para conectar com um app do workspace criado lá, em três passos.",
-      key: "O {{name}} só deixa entrar apps que aprovou. Se ele te der uma chave de API, dá para conectar com ela.",
-      askAdmin:
-        "O {{name}} só deixa entrar apps que aprovou. Um admin pode conectar com um app do workspace, ou use uma chave de API se o {{name}} der uma.",
-      preferKey: "Prefere uma chave de API?",
+      ownTitle: "O {{name}} só aceita apps que ele aprovou",
+      ownText: "Crie um app na área de desenvolvedores do {{name}} e cadastre nele este endereço de retorno.",
+      ownTextIn: {
+        metaAds:
+          "No Meta for Developers, crie um app com o caso de uso da API de Marketing e cadastre nele este endereço de retorno.",
+      },
+      created: "Já criei",
+      idTitle: "Cole o ID do app",
+      idText: "Está na página do app que você criou no {{name}}.",
+      keyTitle: "O {{name}} pede uma chave de API",
+      keyText: "Você encontra a chave nas configurações do {{name}}. Ela fica cifrada e ninguém vê depois.",
+      key: "Se ele te der uma chave de API, dá para conectar com ela.",
+      askAdmin: "Um admin pode conectar com um app do workspace, ou use uma chave de API se o {{name}} der uma.",
       useKey: "Conectar com a chave",
-      preferOwn: "Tem um app OAuth lá?",
-      useOwn: "Usar o seu app",
+      useOwn: "Usar um app seu",
     },
     ownClient: {
       title: "Usar seu próprio app OAuth",
