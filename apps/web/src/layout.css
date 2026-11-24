@@ -5634,6 +5634,13 @@ html:not([data-pointer]) .cflow__more summary:focus-visible {
 .cflow__big {
   display: block;
 }
+/* The redirect address while it loads: a block as tall as the address it waits for, with its corners. */
+.cflow__address-wait {
+  display: block;
+  width: 100%;
+  height: 40px;
+  border-radius: var(--control-r-md);
+}
 /* "Connect another way": a quiet link under the address, at its start. */
 .cflow__other {
   align-self: flex-start;

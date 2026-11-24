@@ -470,6 +470,11 @@ function ConnectStep({
     if (savedHeadersUnreadable(error) && savedHeaders.length > 0) setUnreadable(refusal);
     else setRefused(refusal);
   };
+  // Typed by address, a server the catalog lists (Meta Ads's) is named as the catalog names it.
+  const listedAt =
+    askUrl && isHttpsUrl(url)
+      ? catalog.data?.connectors.find((c) => c.kind === "remote_mcp" && sameServer(c.serverUrl, url.trim()))
+      : undefined;
   // The service's name: the server names another account after it ("Stripe 2"). A catalog entry's goes in English,
   // so each viewer reads a name nobody changed in their own language.
   const name =
@@ -478,7 +483,9 @@ function ConnectStep({
       : fixed
         ? (accounts[0]?.label ?? item?.label)
         : isHttpsUrl(url)
-          ? nameOfAddress(url.trim())
+          ? listedAt
+            ? connectorName(t, listedAt)
+            : nameOfAddress(url.trim())
           : "") || undefined;
   const back = returnTo ? oauthReturnPath(returnTo) : returnPath(org.id);
   const shownName = name ?? (isHttpsUrl(serverUrl) ? new URL(serverUrl).hostname : "");
@@ -992,14 +999,17 @@ function OwnClient({
     setScopes(saved.scopes ?? "");
     if (saved.hasSecret || saved.scopes) setMoreOpen(true);
   }, [saved]);
-  if (own.current.isPending || own.current.error) {
-    return own.current.error ? (
-      <SettingNote icon="alert">{errorText(t, own.current.error, i18n.language)}</SettingNote>
-    ) : (
-      <Skeleton height={160} />
-    );
-  }
   const redirectUri = own.current.data?.redirectUri ?? "";
+  // Only the address waits for the server: the stage's words and fields show at once, the address as a block its size.
+  const address = own.current.error ? (
+    <SettingNote icon="alert">{errorText(t, own.current.error, i18n.language)}</SettingNote>
+  ) : own.current.isPending ? (
+    <Skeleton shape="block" className="cflow__address-wait" />
+  ) : (
+    /* A value to copy, not a field to fill. A long address wraps whole. */
+    <CommandBlock command={redirectUri} labelled />
+  );
+  const loading = own.current.isPending;
   const idMissing = touched && clientId.trim() === "";
   const save = () => {
     setTouched(true);
@@ -1085,8 +1095,7 @@ function OwnClient({
           title={t("connectFlow.refused.ownTitle", { name })}
           text={guideFull ?? t("connectFlow.refused.ownText", { name })}
         />
-        {/* A value to copy, not a field to fill. A long address wraps whole. */}
-        <CommandBlock command={redirectUri} labelled />
+        {address}
         {said}
       </>
     );
@@ -1114,7 +1123,7 @@ function OwnClient({
               onChange={(e) => setClientId(e.target.value)}
               autoComplete="off"
               spellCheck={false}
-              disabled={disabled}
+              disabled={disabled || loading}
               aria-invalid={idMissing || undefined}
             />
           </span>
@@ -1142,8 +1151,7 @@ function OwnClient({
         <Step n={2}>
           <b>{t("connectFlow.ownClient.stepRedirect")}</b>
           <span>{t("connectFlow.ownClient.stepRedirectText")}</span>
-          {/* A value to copy, not a field to fill. A long address wraps whole. */}
-          <CommandBlock command={redirectUri} labelled />
+          {address}
         </Step>
         <Step n={3}>
           <label htmlFor="cflow-client-id">
@@ -1156,7 +1164,7 @@ function OwnClient({
               onChange={(e) => setClientId(e.target.value)}
               autoComplete="off"
               spellCheck={false}
-              disabled={disabled}
+              disabled={disabled || loading}
               aria-invalid={idMissing || undefined}
             />
           </span>
