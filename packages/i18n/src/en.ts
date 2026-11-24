@@ -6576,6 +6576,9 @@ export const en = {
           computer: "Computer",
           doneTitle: "All set",
           doneSub: "What was under way goes on with the new account.",
+          /** On the last screen after taking a login other agents thought with: `names` lists them. */
+          doneTaken_one: "{{names}} no longer uses this account. Undo gives it back.",
+          doneTaken_other: "{{names}} no longer use this account. Undo gives it back.",
           /** The main button of the first screen, of More options and of the last screen. */
           finish: "Done",
           undo: "Undo",

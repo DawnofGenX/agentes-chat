@@ -14977,6 +14977,12 @@
   "agentPage.work.brain.v2.doneSub": {
     "value": "What was under way goes on with the new account."
   },
+  "agentPage.work.brain.v2.doneTaken": {
+    "value": {
+      "one": "{{names}} no longer uses this account. Undo gives it back.",
+      "other": "{{names}} no longer use this account. Undo gives it back."
+    }
+  },
   "agentPage.work.brain.v2.finish": {
     "value": "Done"
   },

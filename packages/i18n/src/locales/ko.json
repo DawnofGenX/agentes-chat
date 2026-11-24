@@ -5842,6 +5842,7 @@
           "computer": "컴퓨터",
           "doneTitle": "다 됐어요",
           "doneSub": "진행 중이던 일은 새 계정으로 이어져요.",
+          "doneTaken_other": "{{names}}은(는) 이제 이 계정을 쓰지 않아요. 되돌리기를 누르면 돌려받아요.",
           "finish": "완료",
           "undo": "되돌리기",
           "undone": "원래대로 돌아갔어요.",

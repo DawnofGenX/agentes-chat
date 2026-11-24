@@ -2,7 +2,12 @@ import type { AgentBrain, AgentBrainInput, BrainKind, MachineAccount } from "@ag
 import { useAgents, useAiChoice, useApi, useSetComputerTarget, useUpdateAgent } from "@agenteschat/client";
 import type { BrainScreen } from "@agenteschat/client/lib/agent-edit";
 import { accountInLine } from "@agenteschat/client/lib/ai-accounts";
-import type { AiChoiceRow, AiChoice as AiChoiceValue } from "@agenteschat/client/lib/ai-choice";
+import {
+  type AiChoiceRow,
+  type AiChoice as AiChoiceValue,
+  giveBackLogin,
+  loginHolders,
+} from "@agenteschat/client/lib/ai-choice";
 import { EVERYONE_AUDIENCE } from "@agenteschat/client/lib/audience";
 
 import { type Advanced, advancedDefaults } from "@agenteschat/client/lib/brain-advanced";
@@ -89,6 +94,8 @@ interface Switched {
   missed: string[];
   /** "Atende outras pessoas" off after it, as the server put it. */
   onlyOwnerAfter: boolean;
+  /** The agents a login made for one agent was taken from, and what gives it back to them (`giveBackLogin`). */
+  taken: { names: string[]; giveBack: () => Promise<void> } | null;
 }
 
 /**
@@ -275,6 +282,14 @@ function BrainFlow({
           ),
         ),
       );
+      // A login another agent thinks with moves here: what that agent had is read now, for Desfazer to give it back.
+      const takenFrom = row.act === "move" && row.account ? loginHolders(row.account, agent.id) : [];
+      const taken = takenFrom.length
+        ? {
+            names: (row.account?.usedBy ?? []).filter((n) => n !== agent.name),
+            giveBack: await giveBackLogin(api.agents, org.id, takenFrom),
+          }
+        : null;
       const result = await saveRow(row);
       const others: Switched["others"] = [];
       const missed: string[] = [];
@@ -321,7 +336,15 @@ function BrainFlow({
                   : "agentPage.work.saved.brain",
               { ...g, brain: said, computer: movedTo ?? "", owner: owner ?? "" },
             );
-      setSwitched({ row, before, others, line, missed, onlyOwnerAfter: result?.onlyOwner ?? view.onlyOwner });
+      setSwitched({
+        row,
+        before,
+        others,
+        line,
+        missed,
+        onlyOwnerAfter: result?.onlyOwner ?? view.onlyOwner,
+        taken,
+      });
       setPicked(undefined);
       setAsk(undefined);
       setDir("fwd");
@@ -373,6 +396,8 @@ function BrainFlow({
             ? { brain: "model", ...share }
             : { brain: b.brain, account: b.account, model: b.model, ...share },
         );
+      // This agent let go of the login: the agents it was taken from get it back.
+      await switched.taken?.giveBack();
       for (const o of others)
         await api.agents
           .setBrain(org.id, o.id, { brain: o.brain, account: o.account, model: o.model })
@@ -968,7 +993,14 @@ function BrainFlow({
       return (
         <div className="bd-step">
           <p>{switched.line}</p>
-          <span>{t("agentPage.work.brain.v2.doneSub")}</span>
+          <span>
+            {t("agentPage.work.brain.v2.doneSub")}
+            {switched.taken &&
+              ` ${t("agentPage.work.brain.v2.doneTaken", {
+                count: switched.taken.names.length,
+                names: namesText(t, switched.taken.names, 2),
+              })}`}
+          </span>
           {switched.missed.length > 0 && (
             <SettingNote icon="alert" live>
               {t("agentPage.work.brain.v2.missed", {

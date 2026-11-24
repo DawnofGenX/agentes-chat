@@ -6081,6 +6081,8 @@
           "computer": "Computer",
           "doneTitle": "Alles erledigt",
           "doneSub": "Was gerade lief, geht mit dem neuen Konto weiter.",
+          "doneTaken_one": "{{names}} nutzt dieses Konto nicht mehr. Rückgängig gibt es zurück.",
+          "doneTaken_other": "{{names}} nutzen dieses Konto nicht mehr. Rückgängig gibt es zurück.",
           "finish": "Fertig",
           "undo": "Rückgängig",
           "undone": "Wieder wie vorher.",

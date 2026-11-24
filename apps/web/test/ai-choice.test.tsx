@@ -6,7 +6,7 @@ setupDom();
 
 import { act, cleanup, fireEvent, within } from "@testing-library/react";
 import { brainDialog } from "./ai-picker";
-import { ADA_ID, createFakeApi, fakeAgentBrain, fakeMachinesOf, ORG_ID, seedState } from "./fake-api";
+import { ADA_ID, ATLAS_ID, createFakeApi, fakeAgentBrain, fakeMachinesOf, ORG_ID, seedState } from "./fake-api";
 import { openOrder } from "./plan-rows";
 import { renderApp, screen, settle } from "./render";
 
@@ -296,4 +296,43 @@ describe("Contas de IA: an account's permissions and the order's switch", () => 
     await settle(4);
     expect(state.calls.filter((c) => c.method === "machines.setKeyFallback").map((c) => c.args[1])).toEqual([true]);
   });
+});
+
+test("the DM header's picker: a login Atlas thinks with asks first; Desfazer puts Ada back and gives it back to Atlas", async () => {
+  const atlas = account("acct_atlas", "Max do Atlas", { shared: false, usedBy: ["Atlas"], usedByIds: [ATLAS_ID] });
+  const state = seedState();
+  const api = createFakeApi(state);
+  fakeMachinesOf.get(api)?.setAiAccounts({ accounts: [WORK, atlas], computers: [MAC] });
+  fakeMachinesOf.get(api)?.pair({ id: "machine_1", name: "MacBook" });
+  api.agents.brain = async (_org, id) =>
+    fakeAgentBrain(id, {
+      brain: "claude_code",
+      account: id === ATLAS_ID ? "acct_atlas" : "acct_work",
+      model: id === ATLAS_ID ? "opus" : null,
+      accounts: [WORK, atlas].map((a) => ({ ...a, usable: true })),
+      computer: { machineId: "machine_1", name: "MacBook", online: true },
+      canUsePlans: true,
+      canEdit: true,
+    });
+  await renderApp(`/org/${ORG_ID}/dm/agent/${ADA_ID}`, { api });
+  await settle(8);
+  const header = document.querySelector(".channel__header") as HTMLElement;
+  await click(within(header).getByRole("button", { name: "Mudar o modelo de Ada" }));
+  await settle(4);
+  const d = screen().getByRole("dialog");
+  const rows = await options(within(d).getByRole("combobox", { name: "Conta" }));
+  await click(rows.find((o) => name(o) === "Max do Atlas") as Element);
+  await settle(4);
+  const line = d.querySelector(".ac-setnote-line") as HTMLElement;
+  expect(line.textContent).toContain("Atlas deixa de usar esta conta.");
+  await click(within(line).getByRole("button"));
+  await settle(6);
+  const sent = () => state.calls.filter((c) => c.method === "agents.setBrain").map((c) => [c.args[1], c.args[2]]);
+  expect(sent()).toEqual([[ADA_ID, expect.objectContaining({ account: "acct_atlas", moveAccount: true })]]);
+  await click(screen().getByRole("button", { name: "Desfazer" }));
+  await settle(6);
+  expect(sent().slice(1)).toEqual([
+    [ADA_ID, expect.objectContaining({ account: "acct_work" })],
+    [ATLAS_ID, { brain: "claude_code", account: "acct_atlas", model: "opus" }],
+  ]);
 });

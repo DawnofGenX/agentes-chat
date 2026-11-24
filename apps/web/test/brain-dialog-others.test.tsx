@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, test } from "bun:test";
 import type { AgentBrain, MachineAccount } from "@agenteschat/client";
 import { ApiError } from "@agenteschat/client";
+import { LOGIN_PER_AGENT } from "@agenteschat/client/lib/plans";
 import { setupDom } from "@agenteschat/ui/testing/dom";
 
 setupDom();
@@ -144,4 +145,51 @@ describe("Todos nesta conta", () => {
     expect(brainScreen(d)).toBe("Pronto");
     expect(shownText(d)).toContain("Atlas ficou com a conta de antes.");
   });
+});
+
+describe("a login another agent thinks with", () => {
+  test("taken for Ada, Pronto says Atlas lost it; Desfazer puts Ada back, then gives the login back to Atlas", async () => {
+    // A plan whose account has one login: picking another agent's takes it instead of signing in once more.
+    const was = LOGIN_PER_AGENT.claude_code;
+    (LOGIN_PER_AGENT as { claude_code: boolean }).claude_code = false;
+    try {
+      await takeAndUndo();
+    } finally {
+      (LOGIN_PER_AGENT as { claude_code: boolean }).claude_code = was;
+    }
+  });
+  async function takeAndUndo() {
+    const mine = account({ id: "acct_mine", label: "Claude Pro", usedBy: ["Ada"], usedByIds: [ADA_ID] });
+    const atlas = account({
+      id: "acct_atlas",
+      label: "Claude Max",
+      email: "atlas@acme.com",
+      usedBy: ["Atlas"],
+      usedByIds: [ATLAS_ID],
+    });
+    const { state, api } = await ada({ account: "acct_mine", accounts: [mine, atlas] });
+    // Atlas's AI before the move: its login and its own model.
+    const read = api.agents.brain;
+    api.agents.brain = async (orgId, agentId, scope) =>
+      agentId === ATLAS_ID
+        ? fakeAgentBrain(ATLAS_ID, { brain: "claude_code", account: "acct_atlas", model: "opus" })
+        : read(orgId, agentId, scope);
+    const d = await brainDialog("Quem pensa pela Ada");
+    await toScreen(d, "Trocar de conta");
+    await pickRow(d, "atlas@acme.com");
+    // It asks first, then moves the login here.
+    expect(shownText(d)).toContain("Atlas deixa de usar esta conta.");
+    await click(within(d).getByRole("button", { name: /^Trocar para/ }));
+    await settle(6);
+    const calls = () => state.calls.filter((c) => c.method === "agents.setBrain").map((c) => [c.args[1], c.args[2]]);
+    expect(calls()).toEqual([[ADA_ID, expect.objectContaining({ account: "acct_atlas", moveAccount: true })]]);
+    expect(brainScreen(d)).toBe("Pronto");
+    expect(shownText(d)).toContain("Atlas deixou de usar esta conta. Desfazer devolve a conta.");
+    await click(within(d).getByRole("button", { name: "Desfazer" }));
+    await settle(6);
+    expect(calls().slice(1)).toEqual([
+      [ADA_ID, expect.objectContaining({ account: "acct_mine" })],
+      [ATLAS_ID, { brain: "claude_code", account: "acct_atlas", model: "opus" }],
+    ]);
+  }
 });

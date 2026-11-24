@@ -1,5 +1,5 @@
 import type { AiChoiceState } from "@agenteschat/client";
-import { useAiChoice } from "@agenteschat/client";
+import { useAiChoice, useApi } from "@agenteschat/client";
 import {
   type AiChoice,
   type AiChoiceRow,
@@ -7,6 +7,8 @@ import {
   accountShortName,
   aiChoiceAsks,
   aiChoiceOf,
+  giveBackLogin,
+  loginHolders,
   reasonText,
 } from "@agenteschat/client/lib/ai-choice";
 import { type EffortLevel, effortOf, shownEffort } from "@agenteschat/client/lib/brain-advanced";
@@ -32,6 +34,7 @@ import {
 import type { TFunction } from "i18next";
 import { type ReactNode, useEffect, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useOrg } from "@/components/org-context";
 import { useToast } from "@/lib/toast";
 import "./ai-choice.css";
 
@@ -174,6 +177,8 @@ export function AiChoiceFields({
 }) {
   const { t } = useTranslation();
   const toast = useToast();
+  const api = useApi();
+  const { org } = useOrg();
   const id = useId();
   const [pending, setPending] = useState<AiChoice | null>(null);
   const [ask, setAsk] = useState<AiChoiceRow | null>(null);
@@ -189,7 +194,8 @@ export function AiChoiceFields({
   const locked = disabled || !state.canEdit || state.saving;
 
   const failed = (e: unknown) => toast.show(errorText(t, e), "error");
-  const commit = (next: AiChoice, at: AiChoiceRow) => {
+  /** `giveBack`: a login taken from other agents, which Desfazer gives back to them once this one lets go of it. */
+  const commit = (next: AiChoice, at: AiChoiceRow, giveBack?: () => Promise<void>) => {
     if (onChange) return onChange(next, at);
     const before = state.current;
     setPending(next);
@@ -197,7 +203,11 @@ export function AiChoiceFields({
     state.save(next).then(
       () => {
         const undo = () => {
-          if (before) void state.save(before).then(() => toast.show(t("agentPage.work.brain.v2.undone")), failed);
+          if (before)
+            void state
+              .save(before)
+              .then(() => giveBack?.())
+              .then(() => toast.show(t("agentPage.work.brain.v2.undone")), failed);
         };
         if (onSaved) return onSaved(next, undo);
         if (before) toast.show(t("common.saved"), "success", { label: t("agentPage.work.brain.v2.undo"), run: undo });
@@ -221,6 +231,12 @@ export function AiChoiceFields({
   const agentId = state.target.kind === "agent" || state.target.kind === "lodi" ? state.target.agentId : "";
   const asksOf = (r: AiChoiceRow) => (onChange ? null : aiChoiceAsks(r, agentId));
   const asking = ask ? asksOf(ask) : null;
+  /** A pick asked first: someone else's plan, or a login taken from the agents that think with it. */
+  const take = async (r: AiChoiceRow, moves: boolean) => {
+    if (!moves || !r.account) return commit(aiChoiceOf(r, shown ?? null), r);
+    const giveBack = await giveBackLogin(api.agents, org.id, loginHolders(r.account, agentId));
+    commit({ ...aiChoiceOf(r, shown ?? null), moveAccount: true }, r, giveBack);
+  };
   const pickAccount = (key: string) => {
     const next = state.rows.find((r) => r.key === key);
     if (!next || next.key === row?.key) return setAsk(null);
@@ -330,13 +346,7 @@ export function AiChoiceFields({
           icon={asking.owner ? "mail" : "info"}
           live
           action={
-            <Button
-              variant="primary"
-              disabled={locked}
-              onClick={() =>
-                commit({ ...aiChoiceOf(ask, shown ?? null), ...(asking.takesFrom ? { moveAccount: true } : {}) }, ask)
-              }
-            >
+            <Button variant="primary" disabled={locked} onClick={() => void take(ask, Boolean(asking.takesFrom))}>
               {t("connectAi.use", { label: rowName(t, ask) })}
             </Button>
           }

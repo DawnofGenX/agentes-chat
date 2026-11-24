@@ -6057,6 +6057,8 @@
           "computer": "Bilgisayar",
           "doneTitle": "Her şey hazır",
           "doneSub": "Devam eden işler yeni hesapla sürüyor.",
+          "doneTaken_one": "{{names}} artık bu hesabı kullanmıyor. Geri al hesabı geri verir.",
+          "doneTaken_other": "{{names}} artık bu hesabı kullanmıyor. Geri al hesabı geri verir.",
           "finish": "Bitti",
           "undo": "Geri al",
           "undone": "Eski haline döndü.",

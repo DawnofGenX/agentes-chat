@@ -5865,6 +5865,7 @@
           "computer": "电脑",
           "doneTitle": "都好了",
           "doneSub": "进行中的工作会用新账号继续。",
+          "doneTaken_other": "{{names}} 不再使用这个账号。撤销会把它还回去。",
           "finish": "完成",
           "undo": "撤销",
           "undone": "已恢复原样。",

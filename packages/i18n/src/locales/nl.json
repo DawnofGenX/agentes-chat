@@ -6102,6 +6102,8 @@
           "computer": "Computer",
           "doneTitle": "Alles geregeld",
           "doneSub": "Wat bezig was, gaat verder met het nieuwe account.",
+          "doneTaken_one": "{{names}} gebruikt dit account niet meer. Ongedaan maken geeft het terug.",
+          "doneTaken_other": "{{names}} gebruiken dit account niet meer. Ongedaan maken geeft het terug.",
           "finish": "Klaar",
           "undo": "Ongedaan maken",
           "undone": "Weer zoals het was.",

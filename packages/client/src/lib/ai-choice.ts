@@ -1,5 +1,6 @@
 import { compareInOrder } from "@agenteschat/providers/plans";
 import type { TFunction } from "i18next";
+import type { ApiClient } from "../api/client";
 import type {
   AccountUseReason,
   AgentBrainInput,
@@ -304,3 +305,31 @@ export const accountShortName = (
 /** Why a row is dimmed, in words: its owner by name. */
 export const reasonText = (t: TFunction, row: Pick<AiChoiceRow, "reason" | "account">) =>
   row.reason ? t(`aiAccounts.useReason.${row.reason}`, { owner: firstName(row.account?.ownerName ?? "") }) : "";
+
+/** The agents a login made for one agent is taken from when `agentId` picks it (`moveAccount`). */
+export const loginHolders = (account: { shared?: boolean; usedByIds?: string[] }, agentId: string) =>
+  account.shared === true ? [] : (account.usedByIds ?? []).filter((id) => id !== agentId);
+
+/**
+ * A login taken from other agents, given back by Desfazer: what each of them thinks with is read before the move, and
+ * the returned function puts it back, once this agent's own Desfazer has let go of the login. An agent whose AI can't be
+ * read (not the person's to change) is left as the move left it.
+ */
+export async function giveBackLogin(
+  agents: Pick<ApiClient["agents"], "brain" | "setBrain">,
+  orgId: string,
+  holderIds: readonly string[],
+): Promise<() => Promise<void>> {
+  const before = await Promise.all(
+    holderIds.map((id) =>
+      agents.brain(orgId, id).then(
+        (b) => ({ id, brain: b.brain, account: b.account, model: b.model }),
+        () => null,
+      ),
+    ),
+  );
+  return async () => {
+    for (const b of before)
+      if (b) await agents.setBrain(orgId, b.id, { brain: b.brain, account: b.account, model: b.model });
+  };
+}

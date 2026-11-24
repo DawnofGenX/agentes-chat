@@ -5864,6 +5864,7 @@
           "computer": "Komputer",
           "doneTitle": "Beres",
           "doneSub": "Yang sedang berjalan lanjut dengan akun baru.",
+          "doneTaken_other": "{{names}} tidak lagi memakai akun ini. Batalkan mengembalikannya.",
           "finish": "Selesai",
           "undo": "Batalkan",
           "undone": "Kembali seperti semula.",

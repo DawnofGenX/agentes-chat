@@ -6462,6 +6462,8 @@ export const ptBR = {
           computer: "Computador",
           doneTitle: "Pronto",
           doneSub: "O que estava em andamento continua com a conta nova.",
+          doneTaken_one: "{{names}} deixou de usar esta conta. Desfazer devolve a conta.",
+          doneTaken_other: "{{names}} deixaram de usar esta conta. Desfazer devolve a conta.",
           /** The main button of the first screen, of More options and of the last screen. */
           finish: "Concluído",
           undo: "Desfazer",
