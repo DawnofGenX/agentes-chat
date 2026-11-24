@@ -267,10 +267,13 @@ describe("Notificações", () => {
     expect((await open("n-routine")).textContent).toContain("Parou na etapa 4 de 5");
   });
 
-  test("the filters are a menu beside the title, each with its count; picking one changes the list", async () => {
+  test("the filters are a menu under the title, each with its count; picking one changes the list", async () => {
     await go();
-    const filter = () => document.querySelector(".ac-pagehead__actions .ib-filter") as HTMLElement;
+    // On its own row: beside the title, a long filter's name squeezed the title in the list's narrow column.
+    const filter = () => document.querySelector(".ib-head .ac-pagehead__bar .ib-filter") as HTMLElement;
     expect(filter().textContent).toBe("Tudo");
+    expect(document.querySelector(".ac-pagehead__actions .ib-filter")).toBeNull();
+    expect(document.querySelector(".ac-pagehead__actions .ib-readall")).not.toBeNull();
     const menu = await filterMenu();
     const names = [/Tudo/, /Menções/, /Esperando você/, /Não lidas/, /Reações/, /Pedidos decididos/, /Concluídas/];
     const radios = names.map((name) => menu.getByRole("menuitemradio", { name }));
