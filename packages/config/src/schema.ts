@@ -1469,6 +1469,23 @@ export const envVars = {
     description: "The environment error reports are filed under (`production`, `staging`).",
     section: "Observability",
   },
+  HEAP_SNAPSHOT_MB: {
+    schema: z.coerce.number().int().min(64).optional(),
+    description:
+      "Once a process's JavaScript heap passes this many MiB, it writes one heap snapshot to `HEAP_SNAPSHOT_DIR` (once per process start), to find what holds the memory. Writing it pauses the process for seconds to minutes and takes about as much memory again as the heap, so set it well under the process's memory limit. The file holds everything in the process's memory in clear (decrypted keys, sessions, messages), readable by the server's user alone: delete it once read. No process writes one while the folder holds 3. Unset (default): never.",
+    section: "Observability",
+    example: "3072",
+  },
+  HEAP_SNAPSHOT_DIR: {
+    schema: z
+      .string()
+      .regex(/^(\/|[A-Za-z]:[\\/]|\\\\)/, "must be an absolute path")
+      .optional(),
+    description:
+      "Absolute path of the folder `HEAP_SNAPSHOT_MB` writes its snapshot to; in a container, a mounted volume, or it is gone with the container. Unset: the system's temporary folder.",
+    section: "Observability",
+    example: "/data/heap",
+  },
 } satisfies Record<string, EnvVarDefinition>;
 
 export type EnvVarName = keyof typeof envVars;

@@ -290,72 +290,7 @@ test("a removal that lands while two subscribes to the channel are being checked
   const ana = await joinByInvitation(t, owner, orgId, "ana@example.com");
   const { user } = (await (await ana("/api/app/me")).json()) as { user: { id: string } };
   // The channel's membership check answers only when the test lets it: both subscribes are in flight at the removal.
-  const held: (() => void)[] = [];
-  const holds = <T extends object>(query: T): T =>
-    new Proxy(query, {
-      get(target, key) {
-        const value = Reflect.get(target, key) as unknown;
-        if (typeof value !== "function") return value;
-        if (key === "then")
-          return (ok: (v: unknown) => void, fail: (e: unknown) => void) =>
-            value.call(target, (rows: unknown) => held.push(() => ok(rows)), fail);
-        return (...args: unknown[]) => {
-          const out = value.apply(target, args) as unknown;
-          return out !== null && typeof out === "object" ? holds(out) : out;
-        };
-      },
-    });
-  const db = new Proxy(t.db, {
-    get(target, key) {
-      const value = Reflect.get(target, key) as unknown;
-      if (key === "select")
-        return (fields?: Record<string, unknown>) => {
-          const query = (value as (f?: unknown) => object).call(target, fields);
-          return fields?.channel === schema.channels ? holds(query) : query;
-        };
-      return typeof value === "function" ? value.bind(target) : value;
-    },
-  });
-  // The periodic recheck far away: only the removal's own event may refuse the channel here.
-  const realtime = createRealtime({
-    db,
-    auth: t.auth,
-    config: t.config,
-    log: createLogger("error"),
-    ...t.adapters,
-    sessionRecheckMs: 60_000,
-  });
-  let data: SocketData | undefined;
-  const refused = await realtime.upgrade(
-    new Request(`${ORIGIN}/api/ws?orgId=${orgId}`, { headers: { origin: ORIGIN, cookie: ana.cookie() } }),
-    {
-      upgrade(_request: Request, options: { data: SocketData }) {
-        data = options.data;
-        return true;
-      },
-    } as unknown as Parameters<typeof realtime.upgrade>[1],
-  );
-  expect(refused).toBeUndefined();
-  const frames: Record<string, unknown>[] = [];
-  let readyState = 1;
-  const socket = {
-    data,
-    get readyState() {
-      return readyState;
-    },
-    send(text: string) {
-      frames.push(JSON.parse(text) as Record<string, unknown>);
-      return 1;
-    },
-    close() {
-      readyState = 3;
-    },
-  } as unknown as Parameters<typeof realtime.websocket.open>[0];
-  const until = async (done: () => boolean) => {
-    const deadline = Date.now() + 3000;
-    while (!done() && Date.now() < deadline) await Bun.sleep(1);
-    expect(done()).toBe(true);
-  };
+  const { realtime, held, frames, socket, data, until, closed } = await heldChannelChecks(orgId, ana.cookie());
   const pending: Promise<unknown>[] = [];
   try {
     await realtime.websocket.open(socket);
@@ -385,10 +320,109 @@ test("a removal that lands while two subscribes to the channel are being checked
   } finally {
     for (const release of held.splice(0)) release();
     await Promise.allSettled(pending);
-    readyState = 3;
-    await realtime.websocket.close(socket, 1000);
+    await closed();
   }
 }, 30_000);
+
+test("a socket closed while its subscribe was checked keeps no subscription: nothing holds it afterwards", async () => {
+  const owner = browser(t);
+  await signUp(owner, "owner@example.com");
+  const { orgId, channelId } = await seedOrg(owner);
+  const { realtime, held, frames, socket, data, until, closed } = await heldChannelChecks(orgId, owner.cookie());
+  await realtime.websocket.open(socket);
+  const subscribing = Promise.resolve(
+    realtime.websocket.message(socket, JSON.stringify({ type: "subscribe", channelId })),
+  );
+  await until(() => held.length === 1);
+  await closed();
+  for (const release of held.splice(0)) release();
+  await subscribing;
+  expect((data as BrowserSocketData).subscriptions.size).toBe(0);
+  const posted = await owner(`/api/app/organizations/${orgId}/channels/${channelId}/messages`, {
+    json: { body: "after the close" },
+  });
+  expect(posted.status).toBe(201);
+  expect(frames.filter((f) => f.channelId === channelId)).toEqual([]);
+}, 30_000);
+
+/**
+ * A realtime server whose channel membership checks answer only when the test releases them (`held`), and one browser
+ * socket on it, made by hand so the test decides when it closes (`closed`).
+ */
+async function heldChannelChecks(orgId: string, cookie: string) {
+  const held: (() => void)[] = [];
+  const holds = <T extends object>(query: T): T =>
+    new Proxy(query, {
+      get(target, key) {
+        const value = Reflect.get(target, key) as unknown;
+        if (typeof value !== "function") return value;
+        if (key === "then")
+          return (ok: (v: unknown) => void, fail: (e: unknown) => void) =>
+            value.call(target, (rows: unknown) => held.push(() => ok(rows)), fail);
+        return (...args: unknown[]) => {
+          const out = value.apply(target, args) as unknown;
+          return out !== null && typeof out === "object" ? holds(out) : out;
+        };
+      },
+    });
+  const db = new Proxy(t.db, {
+    get(target, key) {
+      const value = Reflect.get(target, key) as unknown;
+      if (key === "select")
+        return (fields?: Record<string, unknown>) => {
+          const query = (value as (f?: unknown) => object).call(target, fields);
+          return fields?.channel === schema.channels ? holds(query) : query;
+        };
+      return typeof value === "function" ? value.bind(target) : value;
+    },
+  });
+  // The periodic recheck far away: only what the test does refuses or drops a channel.
+  const realtime = createRealtime({
+    db,
+    auth: t.auth,
+    config: t.config,
+    log: createLogger("error"),
+    ...t.adapters,
+    sessionRecheckMs: 60_000,
+  });
+  let data: SocketData | undefined;
+  const refused = await realtime.upgrade(
+    new Request(`${ORIGIN}/api/ws?orgId=${orgId}`, { headers: { origin: ORIGIN, cookie } }),
+    {
+      upgrade(_request: Request, options: { data: SocketData }) {
+        data = options.data;
+        return true;
+      },
+    } as unknown as Parameters<typeof realtime.upgrade>[1],
+  );
+  expect(refused).toBeUndefined();
+  const frames: Record<string, unknown>[] = [];
+  let readyState = 1;
+  const socket = {
+    data,
+    get readyState() {
+      return readyState;
+    },
+    send(text: string) {
+      frames.push(JSON.parse(text) as Record<string, unknown>);
+      return 1;
+    },
+    close() {
+      readyState = 3;
+    },
+  } as unknown as Parameters<typeof realtime.websocket.open>[0];
+  const until = async (done: () => boolean) => {
+    const deadline = Date.now() + 3000;
+    while (!done() && Date.now() < deadline) await Bun.sleep(1);
+    expect(done()).toBe(true);
+  };
+  const closed = async () => {
+    if (readyState === 3) return;
+    readyState = 3;
+    await realtime.websocket.close(socket, 1000);
+  };
+  return { realtime, held, frames, socket, data, until, closed };
+}
 
 test("end to end: a subscriber sees the message, the streamed deltas and the agent's reply", async () => {
   const owner = browser(t);

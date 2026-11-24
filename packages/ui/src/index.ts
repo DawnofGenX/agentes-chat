@@ -369,7 +369,6 @@ export {
   SkeletonRow,
   Spinner,
   skeletonOnScreen,
-  TopProgress,
   useDelayed,
 } from "./components/Skeleton";
 export { StepTrack, type StepTrackState, type StepTrackStep } from "./components/StepTrack";

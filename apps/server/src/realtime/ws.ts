@@ -14,6 +14,7 @@ import {
   type Unsubscribe,
   userTopic,
 } from "@agenteschat/adapters";
+import { retryAfterReason } from "@agenteschat/client/lib/backoff";
 import type { Config } from "@agenteschat/config";
 import { and, type Database, eq, inArray, isNotNull, isNull, or, schema, sql } from "@agenteschat/db";
 import {
@@ -62,6 +63,12 @@ import {
 import type { LiveSocketData, LiveSockets } from "./live";
 import type { MachineSocketData, MachineSockets } from "./machines";
 import type { StreamSocketData, StreamSockets } from "./streams";
+
+/**
+ * Seconds a tab waits (at least, then spread over as long again) before dialing back after a check the database
+ * couldn't answer (its session, its membership, a channel): a saturated pool isn't hit again by every tab at once.
+ */
+const DB_RETRY_AFTER_S = 5;
 
 /**
  * WebSocket endpoint `GET /api/ws?orgId=<uuid>` (docs/adr/0010-realtime.md).
@@ -377,7 +384,7 @@ export function createRealtime(deps: RealtimeDeps) {
         return ws.readyState === 1;
       } catch {
         // If the session store cannot be checked, stop forwarding private events.
-        if (ws.readyState === 1) ws.close(1011, "session unavailable");
+        if (ws.readyState === 1) ws.close(1011, retryAfterReason(DB_RETRY_AFTER_S, "session unavailable"));
         return false;
       }
     })();
@@ -810,7 +817,7 @@ export function createRealtime(deps: RealtimeDeps) {
               for (const channelId of checked) if (!allowed.has(channelId)) drop(channelId, "revoked");
             } catch {
               // A failed durable check must not leave a private subscription open.
-              if (ws.readyState === 1) ws.close(1011, "membership unavailable");
+              if (ws.readyState === 1) ws.close(1011, retryAfterReason(DB_RETRY_AFTER_S, "membership unavailable"));
             } finally {
               rechecking = false;
             }
@@ -917,7 +924,7 @@ export function createRealtime(deps: RealtimeDeps) {
           // catches up on what it missed.
           deps.log.warn("channel subscription check failed", { error: String(error) });
           send(ws, { type: "error", code: "unavailable", channelId });
-          ws.close(1011, "try again");
+          ws.close(1011, retryAfterReason(DB_RETRY_AFTER_S, "try again"));
           return;
         } finally {
           if (ws.data.pending.get(channelId) === check) ws.data.pending.delete(channelId);
@@ -925,6 +932,9 @@ export function createRealtime(deps: RealtimeDeps) {
         // A revocation that arrived while we were checking wins over a stale "allowed".
         if (!denied && check.revoked) denied = "forbidden";
         if (denied) return send(ws, { type: "error", code: denied, channelId });
+        // Closed while it was checked: `close` already let go of its subscriptions, so one made now would hold the
+        // socket and its listener for the life of the process.
+        if (ws.readyState !== 1) return;
         if (ws.data.subscriptions.has(channelId)) return send(ws, { type: "subscribed", channelId });
         const off = deps.pubsub.subscribe(channelTopic(channelId), (event) => {
           if (ws.readyState === 1) send(ws, { type: "event", channelId, event });

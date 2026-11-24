@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { boolean, check, integer, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { bigint, boolean, check, integer, jsonb, pgTable, real, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import type { MachineLoadRecord } from "./machines";
 
 /**
@@ -35,3 +35,27 @@ export const instanceTelemetry = pgTable(
   },
   (t) => [check("instance_telemetry_one_row", sql`${t.id} = 1`)],
 );
+
+/**
+ * Each server process's own vitals (the app's and every worker's), written by the process about once a minute and
+ * read by the operator API (`GET /vitals`): one row per process start. Rows a process stopped writing a day ago go.
+ * The installation's own, so no `org_id`.
+ */
+export const serverProcesses = pgTable("server_processes", {
+  /** Made at the process's start. */
+  id: uuid().primaryKey(),
+  /** `SERVER_ROLE`: `all` or `worker`. */
+  role: text().notNull(),
+  version: text().notNull(),
+  startedAt: timestamp({ withTimezone: true }).notNull(),
+  seenAt: timestamp({ withTimezone: true }).notNull(),
+  rssBytes: bigint({ mode: "number" }).notNull(),
+  heapUsedBytes: bigint({ mode: "number" }).notNull(),
+  heapTotalBytes: bigint({ mode: "number" }).notNull(),
+  /** The event loop's delay over its last minute (`event-loop-lag.ts`); null before its first minute ended. */
+  eventLoopP99Ms: real(),
+  eventLoopMaxMs: real(),
+  /** When it wrote its heap snapshot (`HEAP_SNAPSHOT_MB`), and the file's name; null: none. */
+  heapSnapshotAt: timestamp({ withTimezone: true }),
+  heapSnapshotFile: text(),
+});

@@ -278,6 +278,7 @@ export * from "./plan-models";
 export * from "./plan-move";
 export * from "./plan-usage";
 export * from "./problem-report";
+export * from "./process-vitals";
 export * from "./profile";
 export * from "./push";
 export * from "./push-messages";

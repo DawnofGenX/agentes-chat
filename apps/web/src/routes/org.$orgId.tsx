@@ -19,7 +19,6 @@ import { DesktopTitleBar } from "@/components/DesktopTitleBar";
 import { DetailsHost } from "@/components/DetailsHost";
 import { InviteDialogProvider } from "@/components/invite/InviteDialog";
 import { LeaveChannelDialog } from "@/components/LeaveChannelDialog";
-import { RefetchBar } from "@/components/Loading";
 import { OutageNotices } from "@/components/MachineOutages";
 import { NavDrawerProvider, NavScrim, ShellBar } from "@/components/NavDrawer";
 import { NoticeIsland } from "@/components/NoticeIsland";
@@ -148,7 +147,6 @@ function OrgLayout() {
                     {/* One new agent's dialog for every way in (ADR 0164): the sidebar, the pages and the menus. */}
                     <NewAgentProvider>
                       <div className="shell">
-                        <RefetchBar />
                         <CommandMenu />
                         <LeaveChannelDialog />
                         {!focused && (

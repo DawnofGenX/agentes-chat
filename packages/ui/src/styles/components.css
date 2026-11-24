@@ -5163,33 +5163,6 @@ html:not([data-pointer]) .ac-switch:focus-visible {
   border-radius: var(--radius-md);
   background: var(--surface-raised);
 }
-.ac-top-progress {
-  position: absolute;
-  inset: 0 0 auto;
-  height: 2px;
-  overflow: hidden;
-  z-index: var(--z-sticky);
-  pointer-events: none;
-}
-.ac-top-progress::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  width: 40%;
-  background: var(--ink-muted);
-  opacity: 0.6;
-}
-@media (prefers-reduced-motion: no-preference) {
-  .ac-top-progress::before {
-    animation: ac-top-progress 1.1s ease-in-out infinite;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .ac-top-progress::before {
-    width: 100%;
-    opacity: 0.35;
-  }
-}
 @keyframes ac-top-progress {
   from {
     transform: translateX(-100%);

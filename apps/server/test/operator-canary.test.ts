@@ -133,6 +133,8 @@ const KEPT: Record<string, string[]> = {
   db_connections: ["label", "status", "last_error"],
   // A registered host and its look: only this API writes them, never a workspace (ADR 0194).
   hosts: ["host", "name", "accent"],
+  // A server process's own vitals: only the process writes them, from its role, its release and its snapshot's name.
+  server_processes: ["role", "version", "heap_snapshot_file"],
 };
 
 /** The places the proof is about: each holds a canary before any read, and after every column got one. */
@@ -420,6 +422,18 @@ beforeAll(async () => {
     content: "canary memory",
   });
   await db.insert(schema.hosts).values({ host: "app.northwind.example", name: "Northwind Studio", accent: "#7c3aed" });
+  await db.insert(schema.serverProcesses).values({
+    id: crypto.randomUUID(),
+    role: "all",
+    version: "test",
+    startedAt: new Date(),
+    seenAt: new Date(),
+    rssBytes: 1,
+    heapUsedBytes: 1,
+    heapTotalBytes: 1,
+    heapSnapshotAt: new Date(),
+    heapSnapshotFile: "heap-all.heapsnapshot",
+  });
   await db.insert(schema.auditLog).values({
     orgId,
     actorType: "agent",
@@ -929,6 +943,7 @@ beforeAll(async () => {
   const paths = [
     "/openapi.json",
     "/health",
+    "/vitals",
     "/orgs?limit=200",
     "/orgs?q=acme",
     "/events",
