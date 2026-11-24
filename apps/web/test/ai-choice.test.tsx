@@ -325,7 +325,10 @@ test("the DM header's picker: a login Atlas thinks with asks first; Desfazer put
   await settle(4);
   const line = d.querySelector(".ac-setnote-line") as HTMLElement;
   expect(line.textContent).toContain("Atlas deixa de usar esta conta.");
-  await click(within(line).getByRole("button"));
+  // Clicked twice while Atlas's AI is read: taken once.
+  const take = within(line).getByRole("button");
+  act(() => void fireEvent.click(take));
+  act(() => void fireEvent.click(take));
   await settle(6);
   const sent = () => state.calls.filter((c) => c.method === "agents.setBrain").map((c) => [c.args[1], c.args[2]]);
   expect(sent()).toEqual([[ADA_ID, expect.objectContaining({ account: "acct_atlas", moveAccount: true })]]);

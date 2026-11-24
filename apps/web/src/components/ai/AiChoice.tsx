@@ -233,6 +233,8 @@ export function AiChoiceFields({
   const asking = ask ? asksOf(ask) : null;
   /** A pick asked first: someone else's plan, or a login taken from the agents that think with it. */
   const take = async (r: AiChoiceRow, moves: boolean) => {
+    // Its button goes at once: a second click while the agents losing it are read would take it twice.
+    setAsk(null);
     if (!moves || !r.account) return commit(aiChoiceOf(r, shown ?? null), r);
     const giveBack = await giveBackLogin(api.agents, org.id, loginHolders(r.account, agentId));
     commit({ ...aiChoiceOf(r, shown ?? null), moveAccount: true }, r, giveBack);
