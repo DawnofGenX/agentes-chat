@@ -15213,7 +15213,6 @@ export const ptBR = {
     customText: "Qualquer servidor MCP pelo endereço https. Se ele aceitar OAuth, você autoriza na página dele.",
     urlHelp: "O endereço https do servidor.",
     name: "Nome",
-    namePlaceholder: "Ex.: Suporte",
     continueIn: "Continuar no {{name}}",
     continueInComposio: "Continuar na Composio",
     /** Conectar o GitHub onde o servidor tem o app agentes.chat: o app primeiro, uma conta depois. */

@@ -15242,7 +15242,6 @@ export const en = {
     customText: "Any MCP server by its https address. If it supports OAuth, you authorize on its page.",
     urlHelp: "The server's https address.",
     name: "Name",
-    namePlaceholder: "E.g. Support",
     continueIn: "Continue on {{name}}",
     continueInComposio: "Continue on Composio",
     /** On Reconnect GitHub: its sign-in asks about organizations only the first time. */

@@ -839,6 +839,12 @@ function ConnectStep({
               />
             </span>
             {urlError && <SettingNote icon="alert">{urlError}</SettingNote>}
+            {/* An address already connected here takes another account: the footer keeps who can use it. */}
+            {!urlError && again && unchecked && (
+              <SettingNote icon="info" live>
+                {t("connectFlow.newAccountUnchecked")}
+              </SettingNote>
+            )}
             <Button variant="link" className="cflow__other" onClick={() => setMoreOpen(true)}>
               {t("connectFlow.address.other")}
             </Button>

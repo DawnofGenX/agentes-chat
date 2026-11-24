@@ -5559,7 +5559,7 @@ html:not([data-pointer]) .cflow__more summary:focus-visible {
   gap: var(--form-gap);
   margin-top: var(--space-3);
 }
-/* After "Para quem" the dialog's own gap is the space: a field ends on its own line, not on running text. Under a
+/* After "For whom" the dialog's own gap is the space: a field ends on its own line, not on running text. Under a
    line of "Other ways to connect", its body's gap is. */
 .ac-field + .cflow__key,
 .ac-optrow__more > .cflow__key,
